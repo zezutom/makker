@@ -16,6 +16,6 @@ fun main() {
         install(ContentNegotiation) {
             json()
         }
-        configureRouting()
+        configureRouting(TODO())
     }.start(wait = true)
 }

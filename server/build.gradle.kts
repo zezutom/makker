@@ -10,13 +10,6 @@ plugins {
     kotlin("jvm")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("com.github.johnrengelman.shadow")
-    id("org.jsonschema2dataclass")
-}
-
-jsonSchema2Pojo {
-    targetPackage.set("com.tomaszezula.makke.api")
-    propertyWordDelimiters.set("_")
-    includeGeneratedAnnotation.set(false)
 }
 
 application {
