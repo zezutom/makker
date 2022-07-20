@@ -2,7 +2,7 @@ package com.tomaszezula.makker.client
 
 import com.tomaszezula.makker.client.model.*
 
-interface MakerClient {
+interface MakeClient {
 
     /**
      * Creates a new scenario.

@@ -20,11 +20,11 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class DefaultMakerClient(
+class DefaultMakeClient(
     private val client: HttpClient,
     private val mapper: ObjectMapper,
     private val config: MakerClientConfig
-) : MakerClient {
+) : MakeClient {
 
     // TODO logging
     companion object {
@@ -66,6 +66,8 @@ class DefaultMakerClient(
                 Scenario.Id(api.scenario.id),
                 api.scenario.name
             )
+            //"{\"scenario\":{\"id\":1,\"name\":\"New Scenario\",\"usedPackages\":[]}}"
+            //"{\"scenario\":{\"id\":1,\"name\":\"New Scenario\",\"usedPackages\":[]}}"
         }
 
     override suspend fun getBlueprint(scenarioId: Scenario.Id, draft: Boolean): Result<Blueprint> =
