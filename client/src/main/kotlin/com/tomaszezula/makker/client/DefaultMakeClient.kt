@@ -3,8 +3,6 @@ package com.tomaszezula.makker.client
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.tomaszezula.makke.api.Flow
-import com.tomaszezula.makke.api.Mapper
 import com.tomaszezula.makke.api.Scenario__1
 import com.tomaszezula.makker.client.config.MakerClientConfig
 import com.tomaszezula.makker.client.model.*
@@ -66,11 +64,9 @@ class DefaultMakeClient(
                 Scenario.Id(api.scenario.id),
                 api.scenario.name
             )
-            //"{\"scenario\":{\"id\":1,\"name\":\"New Scenario\",\"usedPackages\":[]}}"
-            //"{\"scenario\":{\"id\":1,\"name\":\"New Scenario\",\"usedPackages\":[]}}"
         }
 
-    override suspend fun getBlueprint(scenarioId: Scenario.Id, draft: Boolean): Result<Blueprint> =
+    override suspend fun getBlueprint(scenarioId: Scenario.Id): Result<Blueprint> =
         getApiBlueprint(scenarioId).map { blueprint ->
             Blueprint(
                 blueprint.response.blueprint.name,
@@ -142,19 +138,5 @@ class DefaultMakeClient(
             HttpStatusCode.InternalServerError -> Result.failure(ServerErrorException(this.bodyAsText()))
             else -> Result.failure(UnexpectedServerResponseException(this.status))
         }
-
-    private fun Flow.toModule(): Module? =
-        if (this.id != null && this.module != null) {
-            Module(
-                Module.Id(this.id),
-                this.module.toString(),
-                this.mapper?.toModel().orEmpty()
-            )
-        } else null
-
-    private fun Mapper.toModel(): Map<String, Any> =
-        this.additionalProperties?.mapNotNull {
-            (it.key to it.value)
-        }?.toMap().orEmpty()
 }
 

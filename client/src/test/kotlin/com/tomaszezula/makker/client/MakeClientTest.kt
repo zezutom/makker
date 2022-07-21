@@ -1,71 +1,66 @@
 package com.tomaszezula.makker.client
 
-import com.tomaszezula.makke.api.Scenario__1
-import com.tomaszezula.makke.api.Scenario__2
-import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.collections.shouldHaveSize
+import com.tomaszezula.makker.client.MakeApi.blueprint
+import com.tomaszezula.makker.client.MakeApi.scenario
+import io.kotest.core.spec.style.WordSpec
+import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
-import io.ktor.client.*
-import io.ktor.http.*
-import io.ktor.http.content.*
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import org.junit.jupiter.api.fail
 
-class MakeClientTest : FunSpec({
+class MakeClientTest : WordSpec({
 
-    fun makeClient(httpClient: HttpClient): MakeClient = DefaultMakeClient(httpClient, mapper, config)
-
-    fun makeScenario(): Scenario__1 {
-        val makeResponse = Scenario__1()
-        val scenario = Scenario__2()
-        scenario.id = 1
-        scenario.name = "New Scenario"
-        makeResponse.scenario = scenario
-        return makeResponse
-    }
-
-    test("create scenario") {
-        val makeScenario = makeScenario()
-        val httpClient = httpClient(makeScenario)
-        val makeClient = makeClient(httpClient)
-        makeClient.createScenario(
-            teamId,
-            folderId,
-            blueprint,
-            scheduling
-        ).onSuccess { scenario ->
-            // Request
-            val requestHistory = httpClient.mockEngine().requestHistory
-            requestHistory shouldHaveSize 1
-
-            val requestData = requestHistory.first()
-            requestData.url.toString() shouldBe "${config.baseUrl}/scenarios?confirmed=true"
-            requestData.method shouldBe HttpMethod.Post
-            requestData.headers.contains(HttpHeaders.Authorization, "Token ${config.token.value}") shouldBe true
-
-            when (val body = requestData.body) {
-                is TextContent -> {
-                    body.contentType shouldBe ContentType.Application.Json
-                    body.text shouldBe buildJsonObject {
-                        put(
-                            DefaultMakeClient.Companion.CreateScenario.Params.Blueprint,
-                            blueprint.value.lineSequence().map { it.trim() }.joinToString("")
-                        )
-                        put(DefaultMakeClient.Companion.CreateScenario.Params.Scheduling, scheduling.toJson())
-                        put(DefaultMakeClient.Companion.CreateScenario.Params.TeamId, teamId.value)
-                        put(DefaultMakeClient.Companion.CreateScenario.Params.FolderId, folderId.value)
-                    }.toString()
+    "Create scenario" should {
+        "submit a valid request to Make and handle a successful response" {
+            withMakeClient(scenario()) { ctx ->
+                ctx.makeClient.createScenario(
+                    teamId,
+                    folderId,
+                    blueprint,
+                    scheduling
+                ).onSuccess { scenario ->
+                    // Request
+                    ctx.httpClient.shouldPost(
+                        url = "${config.baseUrl}/scenarios?confirmed=true",
+                        payload = buildJsonObject {
+                            put(
+                                DefaultMakeClient.Companion.CreateScenario.Params.Blueprint,
+                                blueprint.value.lineSequence().map { it.trim() }.joinToString("")
+                            )
+                            put(
+                                DefaultMakeClient.Companion.CreateScenario.Params.Scheduling,
+                                scheduling.toJson()
+                            )
+                            put(DefaultMakeClient.Companion.CreateScenario.Params.TeamId, teamId.value)
+                            put(DefaultMakeClient.Companion.CreateScenario.Params.FolderId, folderId.value)
+                        })
+                    // Response
+                    scenario.id.value shouldBe ctx.response.scenario.id
+                    scenario.name shouldBe ctx.response.scenario.name
+                }.onFailure {
+                    fail(it)
                 }
-                else -> fail("Unexpected request payload: $body")
             }
-            // Response
-            scenario.id.value shouldBe makeScenario.scenario.id
-            scenario.name shouldBe makeScenario.scenario.name
-        }.onFailure {
-            fail(it)
         }
     }
-
+    "Get blueprint" should {
+        "submit a valid request to Make and handle a successful response" {
+            withMakeClient(blueprint()) { ctx ->
+                ctx.makeClient.getBlueprint(scenarioId)
+                    .onSuccess { blueprint ->
+                        // Request
+                        ctx.httpClient.shouldGet("${config.baseUrl}/scenarios/${scenarioId.value}/blueprint")
+                        // Response
+                        blueprint.name shouldBe ctx.response.response.blueprint.name
+                        blueprint.modules.size shouldBeGreaterThan 0
+                        blueprint.modules shouldBe ctx.response.response.blueprint.flow.mapNotNull { it.toModule() }
+                        blueprint.json.value shouldBe mapper.writeValueAsString(ctx.response)
+                    }.onFailure {
+                        fail(it)
+                    }
+            }
+        }
+    }
 })
 

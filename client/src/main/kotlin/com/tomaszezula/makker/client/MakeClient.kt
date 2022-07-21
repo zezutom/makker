@@ -25,14 +25,10 @@ interface MakeClient {
      * Returns the scenario blueprint.
      *
      * @param scenarioId
-     * @param draft
      *
      * @return Either the found blueprint or a failed result.
      */
-    suspend fun getBlueprint(
-        scenarioId: Scenario.Id,
-        draft: Boolean
-    ): Result<Blueprint>
+    suspend fun getBlueprint(scenarioId: Scenario.Id): Result<Blueprint>
 
     /**
      * Sets the user defined data of an arbitrary module within the provided scenario.

@@ -1,73 +1,26 @@
 package com.tomaszezula.makker.client
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.tomaszezula.makker.client.config.MakerClientConfig
-import com.tomaszezula.makker.client.model.*
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.shouldBe
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.utils.io.*
-import java.net.URI
+import kotlinx.serialization.json.JsonObject
+import org.junit.jupiter.api.fail
 
-val config = MakerClientConfig(
-    URI.create("https://test-server.com"),
-    AuthToken("test-token")
-)
-val mapper: ObjectMapper = ObjectMapper()
-    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    .registerModule(KotlinModule.Builder().build())
+suspend fun <T> withMakeClient(data: T, block: suspend (TestContext<T>) -> Unit) {
+    val httpClient = httpClient(data)
+    block(TestContext(data, httpClient, makeClient(httpClient)))
+}
 
-val teamId = Team.Id(1)
+data class TestContext<T>(val response: T, val httpClient: HttpClient, val makeClient: MakeClient)
 
-val folderId = Folder.Id(2)
-
-val scheduling = IndefiniteScheduling(900)
-
-val blueprint =
-    BlueprintJson(
-        """
-        {
-            "name": "New scenario",
-            "flow": [
-                {
-                    "id": null,
-                    "module": "placeholder:Placeholder",
-                    "metadata": {
-                        "designer": {
-                            "x": 0,
-                            "y": 0
-                        }
-                    }
-                }
-            ],
-            "metadata": {
-                "instant": false,
-                "version": 1,
-                "scenario": {
-                    "roundtrips": 1,
-                    "maxErrors": 3,
-                    "autoCommit": true,
-                    "autoCommitTriggerLast": true,
-                    "sequential": false,
-                    "confidential": false,
-                    "dataloss": false,
-                    "dlq": false
-                },
-                "designer": {
-                    "orphans": []
-                },
-                "zone": "eu1.make.com"
-            }
-        }
-    """.trimIndent()
-    )
-
-fun <T> httpClient(payload: T): HttpClient {
+private fun <T> httpClient(response: T): HttpClient {
     val mockEngine = MockEngine {
         respond(
-            content = ByteReadChannel(mapper.writeValueAsString(payload)),
+            content = ByteReadChannel(mapper.writeValueAsString(response)),
             status = HttpStatusCode.OK,
             headers = headersOf(HttpHeaders.ContentType, "application/json")
         )
@@ -75,6 +28,33 @@ fun <T> httpClient(payload: T): HttpClient {
     return HttpClient(mockEngine)
 }
 
+private fun makeClient(httpClient: HttpClient): MakeClient = DefaultMakeClient(httpClient, mapper, config)
+
 fun HttpClient.mockEngine(): MockEngine = (this.engine as MockEngine)
 
+fun HttpClient.shouldGet(url: String) = verifyRequest(url, HttpMethod.Get)
 
+fun HttpClient.shouldPost(url: String, payload: JsonObject) =
+    verifyRequest(url, HttpMethod.Post, payload)
+
+private fun HttpClient.verifyRequest(url: String, method: HttpMethod, payload: JsonObject? = null) {
+    val requestHistory = this.mockEngine().requestHistory
+    requestHistory shouldHaveSize 1
+
+    val requestData = requestHistory.first()
+    requestData.url.toString() shouldBe url
+    requestData.method shouldBe method
+    requestData.headers.contains(
+        HttpHeaders.Authorization,
+        "Token ${config.token.value}"
+    ) shouldBe true
+    payload?.let { json ->
+        when (val body = requestData.body) {
+            is TextContent -> {
+                body.contentType shouldBe ContentType.Application.Json
+                body.text shouldBe json.toString()
+            }
+            else -> fail("Unexpected request payload: $body")
+        }
+    }
+}
