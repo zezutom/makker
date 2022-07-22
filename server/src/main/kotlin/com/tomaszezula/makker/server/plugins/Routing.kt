@@ -1,10 +1,10 @@
 package com.tomaszezula.makker.server.plugins
 
-import com.tomaszezula.makker.client.DefaultMakerClient
+import com.tomaszezula.makker.client.DefaultMakeClient
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 
-fun Application.configureRouting(client: DefaultMakerClient) {
+fun Application.configureRouting(client: DefaultMakeClient) {
     routing {
         post("/scenarios") {
 //            client.scenario.create(
