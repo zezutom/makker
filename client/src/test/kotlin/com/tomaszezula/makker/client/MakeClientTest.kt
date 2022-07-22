@@ -4,6 +4,7 @@ import com.tomaszezula.makker.client.MakeApi.blueprint
 import com.tomaszezula.makker.client.MakeApi.scenario
 import io.kotest.core.spec.style.WordSpec
 import io.kotest.matchers.ints.shouldBeGreaterThan
+import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -59,6 +60,36 @@ class MakeClientTest : WordSpec({
                     }.onFailure {
                         fail(it)
                     }
+            }
+        }
+    }
+    "Set module data" should {
+        "submit a valid request to Make and handle a successful response" {
+            val fieldName = "fruit"
+            val model = mapOf(
+                fieldName to "apples"
+            )
+            val updatedValue = "bananas"
+            val data = mapper.readTree("""{"content": "$updatedValue"}""")
+            withMakeClient(blueprint(model)) { ctx ->
+                ctx.makeClient.setModuleData(
+                    scenarioId,
+                    moduleId,
+                    fieldName,
+                    data
+                ).onSuccess { module ->
+                    // Request
+                    ctx.httpClient.shouldPatch("${config.baseUrl}/scenarios/${scenarioId.value}?confirmed=true")
+                    // Response
+                    ctx.response.response.blueprint.flow.size shouldBe 1
+                    val flow = ctx.response.response.blueprint.flow.first()
+                    module.id.value shouldBe flow.id
+                    module.name shouldBe flow.module.toString()
+                    module.model shouldContainKey fieldName
+                    module.model[fieldName] shouldBe updatedValue
+                }.onFailure {
+                    fail(it)
+                }
             }
         }
     }

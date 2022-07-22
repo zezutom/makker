@@ -1,6 +1,5 @@
 package com.tomaszezula.makker.client
 
-import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
@@ -33,28 +32,27 @@ private fun makeClient(httpClient: HttpClient): MakeClient = DefaultMakeClient(h
 fun HttpClient.mockEngine(): MockEngine = (this.engine as MockEngine)
 
 fun HttpClient.shouldGet(url: String) = verifyRequest(url, HttpMethod.Get)
+fun HttpClient.shouldPatch(url: String) = verifyRequest(url, HttpMethod.Patch)
 
 fun HttpClient.shouldPost(url: String, payload: JsonObject) =
     verifyRequest(url, HttpMethod.Post, payload)
 
 private fun HttpClient.verifyRequest(url: String, method: HttpMethod, payload: JsonObject? = null) {
-    val requestHistory = this.mockEngine().requestHistory
-    requestHistory shouldHaveSize 1
-
-    val requestData = requestHistory.first()
-    requestData.url.toString() shouldBe url
-    requestData.method shouldBe method
-    requestData.headers.contains(
-        HttpHeaders.Authorization,
-        "Token ${config.token.value}"
-    ) shouldBe true
-    payload?.let { json ->
-        when (val body = requestData.body) {
-            is TextContent -> {
-                body.contentType shouldBe ContentType.Application.Json
-                body.text shouldBe json.toString()
+    this.mockEngine()
+        .requestHistory
+        .find { it.url.toString() == url && it.method == method }?.let { requestData ->
+            payload?.let { json ->
+                when (val body = requestData.body) {
+                    is TextContent -> {
+                        body.contentType shouldBe ContentType.Application.Json
+                        body.text shouldBe json.toString()
+                    }
+                    else -> fail("Unexpected request payload: $body")
+                }
             }
-            else -> fail("Unexpected request payload: $body")
-        }
-    }
+            requestData.headers.contains(
+                HttpHeaders.Authorization,
+                "Token ${config.token.value}"
+            ) shouldBe true
+        } ?: run { fail("No such request: $method: $url") }
 }
