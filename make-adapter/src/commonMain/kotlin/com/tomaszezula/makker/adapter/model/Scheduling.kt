@@ -10,7 +10,7 @@ sealed interface Scheduling {
     }
 }
 
-data class Indefinite(val interval: Int = MinInterval) : Scheduling {
+data class IndefiniteScheduling(val interval: Int = MinInterval) : Scheduling {
     override fun toJson(): String =
         """
             {"type":"indefinitely","interval":$interval}            

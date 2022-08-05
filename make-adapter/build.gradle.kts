@@ -4,9 +4,12 @@ plugins {
 }
 
 val ktorVersion: String by project
+val kotestVersion: String by project
 
 kotlin {
-    jvm {}
+    jvm {
+        withJava()
+    }
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -16,7 +19,11 @@ kotlin {
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
             }
         }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(("io.ktor:ktor-client-mock:$ktorVersion"))
+            }
+        }
     }
-
 }
-

@@ -147,15 +147,13 @@ class MakeAdapterImpl(
         jsonObject(this, ScenarioKey)?.let {
             it[IdKey]?.jsonPrimitive?.longOrNull?.let { scenarioId ->
                 it[TeamIdKey]?.jsonPrimitive?.longOrNull?.let { teamId ->
-                    it[FolderIdKey]?.jsonPrimitive?.longOrNull?.let { folderId ->
-                        it[NameKey]?.jsonPrimitive?.content?.let { name ->
-                            Scenario(
-                                Scenario.Id(scenarioId),
-                                Scenario.TeamId(teamId),
-                                Scenario.FolderId(folderId),
-                                name
-                            )
-                        }
+                    it[NameKey]?.jsonPrimitive?.content?.let { name ->
+                        Scenario(
+                            Scenario.Id(scenarioId),
+                            Scenario.TeamId(teamId),
+                            it[FolderIdKey]?.jsonPrimitive?.longOrNull?.let { folderId -> Scenario.FolderId(folderId) },
+                            name
+                        )
                     }
                 }
             }
