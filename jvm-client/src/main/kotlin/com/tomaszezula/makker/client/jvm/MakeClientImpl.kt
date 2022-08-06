@@ -7,7 +7,7 @@ import com.tomaszezula.makker.adapter.model.Scheduling
 import kotlinx.coroutines.*
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.Base64
+import java.util.*
 
 class MakeClientImpl(private val makeAdapter: MakeAdapter) : MakeClient {
 
@@ -89,7 +89,7 @@ class MakeClientImpl(private val makeAdapter: MakeAdapter) : MakeClient {
 
 
     private fun Blueprint.Json.decode(): Blueprint.Json =
-        Blueprint.Json(Base64.getDecoder().decode(this.value).toString())
+        Blueprint.Json(String(Base64.getDecoder().decode(this.value)))
 
     private fun Blueprint.Json.toPlainText(encoded: Boolean): Blueprint.Json =
         if (encoded) this.decode() else this
