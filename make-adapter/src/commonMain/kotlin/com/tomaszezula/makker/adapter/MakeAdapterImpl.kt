@@ -41,12 +41,12 @@ class MakeAdapterImpl(
     override suspend fun createScenario(
         teamId: Scenario.TeamId,
         folderId: Scenario.FolderId,
-        blueprint: Blueprint.Json,
+        blueprintJson: Blueprint.Json,
         scheduling: Scheduling
     ): Result<Scenario> =
         scheduling.validate().map { schedule ->
             post(createScenarioUrl, buildJsonObject {
-                put(BlueprintKey, blueprint.value.lineSequence().map { it.trim() }.joinToString(Separator))
+                put(BlueprintKey, blueprintJson.toJson())
                 put(SchedulingKey, schedule.toJson())
                 put(TeamIdKey, teamId.value)
                 put(FolderIdKey, folderId.value)
@@ -158,4 +158,7 @@ class MakeAdapterImpl(
                 }
             }
         }
+
+    private fun Blueprint.Json.toJson(): String =
+        this.value.lineSequence().map { it.trim() }.joinToString(Separator)
 }

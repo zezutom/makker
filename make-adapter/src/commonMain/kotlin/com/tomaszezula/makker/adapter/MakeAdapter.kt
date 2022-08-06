@@ -12,7 +12,7 @@ interface MakeAdapter {
     suspend fun createScenario(
         teamId: TeamId,
         folderId: FolderId,
-        blueprint: Blueprint.Json,
+        blueprintJson: Blueprint.Json,
         scheduling: Scheduling
     ): Result<Scenario>
 
