@@ -9,6 +9,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.verify
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
@@ -24,12 +25,18 @@ class UpdateScenarioTest : StringSpec() {
         "Update scenario should return the updated scenario" {
             every {
                 runBlocking {
-                    makeAdapter.updateScenario(scenario.id, blueprintJson)
+                    makeAdapter.updateScenario(scenario.id, blueprint.json)
                 }
             } returns Result.success(updatedScenario)
 
-            makeClient.updateScenario(scenario.id, blueprintJson).map { scenario ->
-                scenario shouldBe updatedScenario
+            makeClient.updateScenario(scenario.id, blueprint.json).map {
+                it shouldBe updatedScenario
+            }
+
+            verify(exactly = 1) {
+                runBlocking {
+                    makeAdapter.updateScenario(scenario.id, blueprint.json)
+                }
             }
         }
 
@@ -37,10 +44,10 @@ class UpdateScenarioTest : StringSpec() {
             val throwable = IllegalStateException("Something went wrong!")
             every {
                 runBlocking {
-                    makeAdapter.updateScenario(scenario.id, blueprintJson)
+                    makeAdapter.updateScenario(scenario.id, blueprint.json)
                 }
             } returns Result.failure(throwable)
-            makeClient.updateScenario(scenario.id, blueprintJson)
+            makeClient.updateScenario(scenario.id, blueprint.json)
                 .onFailure {
                     it shouldBe throwable
                 }
@@ -52,28 +59,28 @@ class UpdateScenarioTest : StringSpec() {
         "Update scenario should accept a Base64-encoded blueprint" {
             every {
                 runBlocking {
-                    makeAdapter.updateScenario(scenario.id, blueprintJson)
+                    makeAdapter.updateScenario(scenario.id, blueprint.json)
                 }
             } returns Result.success(updatedScenario)
 
-            val encodedJson = Blueprint.Json(Base64.getEncoder().encodeToString(blueprintJson.value.toByteArray()))
-            makeClient.updateScenario(scenario.id, encodedJson, encoded = true).map { scenario ->
-                scenario shouldBe updatedScenario
+            val encodedJson = Blueprint.Json(Base64.getEncoder().encodeToString(blueprint.json.value.toByteArray()))
+            makeClient.updateScenario(scenario.id, encodedJson, encoded = true).map {
+                it shouldBe updatedScenario
             }
         }
 
         "Update scenario should read the blueprint from a file" {
             every {
                 runBlocking {
-                    makeAdapter.updateScenario(scenario.id, blueprintJson)
+                    makeAdapter.updateScenario(scenario.id, blueprint.json)
                 }
             } returns Result.success(updatedScenario)
 
             mockkStatic(Files::class)
-            every { Files.readAllLines(any())} returns listOf(blueprintJson.value)
+            every { Files.readAllLines(any())} returns listOf(blueprint.json.value)
 
-            makeClient.updateScenario(scenario.id, Path.of("blueprint.json")).map { scenario ->
-                scenario shouldBe updatedScenario
+            makeClient.updateScenario(scenario.id, Path.of("blueprint.json")).map {
+                it shouldBe updatedScenario
             }
         }
 

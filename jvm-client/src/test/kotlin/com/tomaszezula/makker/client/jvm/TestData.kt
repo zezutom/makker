@@ -6,7 +6,7 @@ import com.tomaszezula.makker.adapter.model.Scenario
 
 val teamId = Scenario.TeamId(1)
 val folderId = Scenario.FolderId(1)
-val blueprintJson = Blueprint.Json("{}")
+val blueprint = Blueprint("Test blueprint", listOf(), Blueprint.Json("{}"))
 val scheduling = IndefiniteScheduling()
 val scenario = Scenario(
     Scenario.Id(1),

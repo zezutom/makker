@@ -27,14 +27,14 @@ class CreateScenarioTest : StringSpec() {
                     makeAdapter.createScenario(
                         teamId,
                         folderId,
-                        blueprintJson,
+                        blueprint.json,
                         scheduling
                     )
                 }
             } returns Result.success(scenario)
 
-            makeClient.createScenario(teamId, folderId, blueprintJson, scheduling).map { createdScenario ->
-                createdScenario shouldBe scenario
+            makeClient.createScenario(teamId, folderId, blueprint.json, scheduling).map {
+                it shouldBe scenario
             }
 
             verify(exactly = 1) {
@@ -42,7 +42,7 @@ class CreateScenarioTest : StringSpec() {
                     makeAdapter.createScenario(
                         teamId,
                         folderId,
-                        blueprintJson,
+                        blueprint.json,
                         scheduling
                     )
                 }
@@ -56,13 +56,13 @@ class CreateScenarioTest : StringSpec() {
                     makeAdapter.createScenario(
                         teamId,
                         folderId,
-                        blueprintJson,
+                        blueprint.json,
                         scheduling
                     )
                 }
             } returns Result.failure(throwable)
 
-            makeClient.createScenario(teamId, folderId, blueprintJson, scheduling)
+            makeClient.createScenario(teamId, folderId, blueprint.json, scheduling)
                 .onFailure {
                     it shouldBe throwable
                 }
@@ -77,15 +77,15 @@ class CreateScenarioTest : StringSpec() {
                     makeAdapter.createScenario(
                         teamId,
                         folderId,
-                        blueprintJson,
+                        blueprint.json,
                         scheduling
                     )
                 }
             } returns Result.success(scenario)
 
-            val encodedJson = Blueprint.Json(Base64.getEncoder().encodeToString(blueprintJson.value.toByteArray()))
-            makeClient.createScenario(teamId, folderId, encodedJson, scheduling, encoded = true).map { createdScenario ->
-                createdScenario shouldBe scenario
+            val encodedJson = Blueprint.Json(Base64.getEncoder().encodeToString(blueprint.json.value.toByteArray()))
+            makeClient.createScenario(teamId, folderId, encodedJson, scheduling, encoded = true).map {
+                it shouldBe scenario
             }
         }
 
@@ -95,17 +95,17 @@ class CreateScenarioTest : StringSpec() {
                     makeAdapter.createScenario(
                         teamId,
                         folderId,
-                        blueprintJson,
+                        blueprint.json,
                         scheduling
                     )
                 }
             } returns Result.success(scenario)
 
             mockkStatic(Files::class)
-            every { Files.readAllLines(any())} returns listOf(blueprintJson.value)
+            every { Files.readAllLines(any())} returns listOf(blueprint.json.value)
 
-            makeClient.createScenario(teamId, folderId, scheduling, Path.of("blueprint.json")).map { createdScenario ->
-                createdScenario shouldBe scenario
+            makeClient.createScenario(teamId, folderId, scheduling, Path.of("blueprint.json")).map {
+                it shouldBe scenario
             }
         }
     }
