@@ -8,6 +8,7 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 
 class GetBlueprintTest : StringSpec() {
     init {
@@ -43,6 +44,13 @@ class GetBlueprintTest : StringSpec() {
             }
             makeClient.getBlueprints(blueprintMap.keys.toList()).map {
                 it shouldBe blueprintMap.values.toList()
+            }
+            blueprintMap.entries.forEach {
+                verify(exactly = 1) {
+                    runBlocking {
+                        makeAdapter.getBlueprint(it.key)
+                    }
+                }
             }
         }
     }
