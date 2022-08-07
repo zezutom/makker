@@ -4,8 +4,12 @@ import com.tomaszezula.makker.adapter.DefaultMakeAdapter
 import com.tomaszezula.makker.adapter.MakeConfig
 import com.tomaszezula.makker.adapter.model.AuthToken
 import com.tomaszezula.makker.server.handler.CreateScenarioHandler
-import com.tomaszezula.makker.server.plugins.configureAnonymousRouting
-import com.tomaszezula.makker.server.plugins.configureAuthenticatedRouting
+import com.tomaszezula.makker.server.handler.GetBlueprintHandler
+import com.tomaszezula.makker.server.handler.SetModuleDataHandler
+import com.tomaszezula.makker.server.handler.UpdateScenarioHandler
+import com.tomaszezula.makker.server.model.AnonymousContext
+import com.tomaszezula.makker.server.model.AuthenticatedContext
+import com.tomaszezula.makker.server.plugins.configureRouting
 import com.tomaszezula.makker.server.plugins.configureSerialization
 import com.typesafe.config.ConfigFactory
 import io.ktor.client.*
@@ -27,6 +31,7 @@ fun main() {
     val json = Json {
         ignoreUnknownKeys = true
     }
+
     val config = HoconApplicationConfig(ConfigFactory.load())
     val client = HttpClient(CIO) {
         install(Logging) {
@@ -46,16 +51,18 @@ fun main() {
     }
     val makeAdapter = DefaultMakeAdapter(config.toMakeConfig(), client, json)
 
+    val context = config.toAuthToken()?.let {
+        AuthenticatedContext(it)
+    } ?: AnonymousContext
+
     embeddedServer(Netty, port = config.port, host = config.host) {
-        config.toAuthToken()?.let { token ->
-            configureAuthenticatedRouting(
-                CreateScenarioHandler.authenticated(makeAdapter, token)
-            )
-        } ?: run {
-            configureAnonymousRouting(
-                CreateScenarioHandler.anonymous(makeAdapter)
-            )
-        }
+        configureRouting(
+            CreateScenarioHandler(makeAdapter),
+            UpdateScenarioHandler(makeAdapter),
+            GetBlueprintHandler(makeAdapter),
+            SetModuleDataHandler(makeAdapter),
+            context
+        )
         configureSerialization()
     }.start(wait = true)
 }
