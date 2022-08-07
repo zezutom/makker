@@ -28,10 +28,9 @@ class MakeClientImpl(private val makeAdapter: MakeAdapter) : MakeClient {
         teamId: Scenario.TeamId,
         folderId: Scenario.FolderId,
         scheduling: Scheduling,
-        filePath: Path,
-        encoded: Boolean
+        filePath: Path
     ): Result<Scenario> =
-        makeAdapter.createScenario(teamId, folderId, fromFile(filePath, encoded), scheduling)
+        makeAdapter.createScenario(teamId, folderId, fromFile(filePath), scheduling)
 
     override suspend fun updateScenario(
         scenarioId: Scenario.Id,
@@ -42,10 +41,9 @@ class MakeClientImpl(private val makeAdapter: MakeAdapter) : MakeClient {
 
     override suspend fun updateScenario(
         scenarioId: Scenario.Id,
-        filePath: Path,
-        encoded: Boolean
+        filePath: Path
     ): Result<Scenario> =
-        makeAdapter.updateScenario(scenarioId, fromFile(filePath, encoded))
+        makeAdapter.updateScenario(scenarioId, fromFile(filePath))
 
     override suspend fun getBlueprint(scenarioId: Scenario.Id): Result<Blueprint> =
         makeAdapter.getBlueprint(scenarioId)
@@ -80,11 +78,11 @@ class MakeClientImpl(private val makeAdapter: MakeAdapter) : MakeClient {
             }
         }.awaitAll().toResult().map { rs -> rs.all { it } }
 
-    private suspend fun fromFile(filePath: Path, encoded: Boolean): Blueprint.Json {
+    private suspend fun fromFile(filePath: Path): Blueprint.Json {
         val contents = withContext(Dispatchers.IO) {
             Files.readAllLines(filePath)
         }.joinToString(Separator) { it.trim() }
-        return Blueprint.Json(contents).toPlainText(encoded)
+        return Blueprint.Json(contents)
     }
 
 

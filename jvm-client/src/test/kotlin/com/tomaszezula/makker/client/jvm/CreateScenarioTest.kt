@@ -2,8 +2,6 @@ package com.tomaszezula.makker.client.jvm
 
 import com.tomaszezula.makker.adapter.MakeAdapter
 import com.tomaszezula.makker.adapter.model.Blueprint
-import com.tomaszezula.makker.adapter.model.IndefiniteScheduling
-import com.tomaszezula.makker.adapter.model.Scenario
 import io.kotest.assertions.fail
 import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.StringSpec
@@ -20,17 +18,6 @@ class CreateScenarioTest : StringSpec() {
     init {
         val makeAdapter = mockk<MakeAdapter>()
         val makeClient = MakeClientImpl(makeAdapter)
-
-        val teamId = Scenario.TeamId(1)
-        val folderId = Scenario.FolderId(1)
-        val blueprintJson = Blueprint.Json("{}")
-        val scheduling = IndefiniteScheduling()
-        val scenario = Scenario(
-            Scenario.Id(1),
-            teamId,
-            folderId,
-            "New scenario"
-        )
 
         this.coroutineTestScope = true
 
@@ -101,6 +88,7 @@ class CreateScenarioTest : StringSpec() {
                 createdScenario shouldBe scenario
             }
         }
+
         "Create scenario should read the blueprint from a file" {
             every {
                 runBlocking {

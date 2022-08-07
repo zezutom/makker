@@ -19,8 +19,7 @@ interface MakeClient {
         teamId: Scenario.TeamId,
         folderId: Scenario.FolderId,
         scheduling: Scheduling,
-        filePath: Path,
-        encoded: Boolean = false
+        filePath: Path
     ): Result<Scenario>
 
     suspend fun updateScenario(
@@ -31,8 +30,7 @@ interface MakeClient {
 
     suspend fun updateScenario(
         scenarioId: Scenario.Id,
-        filePath: Path,
-        encoded: Boolean = false
+        filePath: Path
     ): Result<Scenario>
 
     suspend fun getBlueprint(scenarioId: Scenario.Id): Result<Blueprint>
