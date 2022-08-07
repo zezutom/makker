@@ -17,7 +17,7 @@ import java.util.*
 class CreateScenarioTest : StringSpec() {
     init {
         val makeAdapter = mockk<MakeAdapter>()
-        val makeClient = MakeClientImpl(makeAdapter)
+        val makeClient = DefaultMakeClient(makeAdapter, token)
 
         this.coroutineTestScope = true
 
@@ -28,7 +28,8 @@ class CreateScenarioTest : StringSpec() {
                         teamId,
                         folderId,
                         blueprint.json,
-                        scheduling
+                        scheduling,
+                        token
                     )
                 }
             } returns Result.success(scenario)
@@ -43,7 +44,8 @@ class CreateScenarioTest : StringSpec() {
                         teamId,
                         folderId,
                         blueprint.json,
-                        scheduling
+                        scheduling,
+                        token
                     )
                 }
             }
@@ -57,7 +59,8 @@ class CreateScenarioTest : StringSpec() {
                         teamId,
                         folderId,
                         blueprint.json,
-                        scheduling
+                        scheduling,
+                        token
                     )
                 }
             } returns Result.failure(throwable)
@@ -78,7 +81,8 @@ class CreateScenarioTest : StringSpec() {
                         teamId,
                         folderId,
                         blueprint.json,
-                        scheduling
+                        scheduling,
+                        token
                     )
                 }
             } returns Result.success(scenario)
@@ -96,7 +100,8 @@ class CreateScenarioTest : StringSpec() {
                         teamId,
                         folderId,
                         blueprint.json,
-                        scheduling
+                        scheduling,
+                        token
                     )
                 }
             } returns Result.success(scenario)

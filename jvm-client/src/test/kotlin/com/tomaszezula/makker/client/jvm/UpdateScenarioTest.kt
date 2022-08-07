@@ -17,7 +17,7 @@ import java.util.*
 class UpdateScenarioTest : StringSpec() {
     init {
         val makeAdapter = mockk<MakeAdapter>()
-        val makeClient = MakeClientImpl(makeAdapter)
+        val makeClient = DefaultMakeClient(makeAdapter, token)
         val updatedScenario = scenario.copy(name = "Updated scenario")
 
         this.coroutineTestScope = true
@@ -25,7 +25,7 @@ class UpdateScenarioTest : StringSpec() {
         "Update scenario should return the updated scenario" {
             every {
                 runBlocking {
-                    makeAdapter.updateScenario(scenario.id, blueprint.json)
+                    makeAdapter.updateScenario(scenario.id, blueprint.json, token)
                 }
             } returns Result.success(updatedScenario)
 
@@ -35,7 +35,7 @@ class UpdateScenarioTest : StringSpec() {
 
             verify(exactly = 1) {
                 runBlocking {
-                    makeAdapter.updateScenario(scenario.id, blueprint.json)
+                    makeAdapter.updateScenario(scenario.id, blueprint.json, token)
                 }
             }
         }
@@ -44,7 +44,7 @@ class UpdateScenarioTest : StringSpec() {
             val throwable = IllegalStateException("Something went wrong!")
             every {
                 runBlocking {
-                    makeAdapter.updateScenario(scenario.id, blueprint.json)
+                    makeAdapter.updateScenario(scenario.id, blueprint.json, token)
                 }
             } returns Result.failure(throwable)
             makeClient.updateScenario(scenario.id, blueprint.json)
@@ -59,7 +59,7 @@ class UpdateScenarioTest : StringSpec() {
         "Update scenario should accept a Base64-encoded blueprint" {
             every {
                 runBlocking {
-                    makeAdapter.updateScenario(scenario.id, blueprint.json)
+                    makeAdapter.updateScenario(scenario.id, blueprint.json, token)
                 }
             } returns Result.success(updatedScenario)
 
@@ -72,7 +72,7 @@ class UpdateScenarioTest : StringSpec() {
         "Update scenario should read the blueprint from a file" {
             every {
                 runBlocking {
-                    makeAdapter.updateScenario(scenario.id, blueprint.json)
+                    makeAdapter.updateScenario(scenario.id, blueprint.json, token)
                 }
             } returns Result.success(updatedScenario)
 

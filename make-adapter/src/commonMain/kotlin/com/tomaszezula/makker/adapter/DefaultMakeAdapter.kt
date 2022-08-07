@@ -14,8 +14,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.serialization.json.*
 
-class MakeAdapterImpl(
-    private val token: AuthToken,
+class DefaultMakeAdapter(
     private val config: MakeConfig,
     private val httpClient: HttpClient,
     private val json: Json
@@ -42,10 +41,11 @@ class MakeAdapterImpl(
         teamId: Scenario.TeamId,
         folderId: Scenario.FolderId,
         blueprintJson: Blueprint.Json,
-        scheduling: Scheduling
+        scheduling: Scheduling,
+        token: AuthToken
     ): Result<Scenario> =
         scheduling.validate().map { schedule ->
-            post(createScenarioUrl, buildJsonObject {
+            post(createScenarioUrl, token, buildJsonObject {
                 put(BlueprintKey, blueprintJson.toJson())
                 put(SchedulingKey, schedule.toJson())
                 put(TeamIdKey, teamId.value)
@@ -53,13 +53,13 @@ class MakeAdapterImpl(
             }) { it.toScenario() }
         }.getOrThrow()
 
-    override suspend fun updateScenario(scenarioId: Scenario.Id, blueprint: Blueprint.Json): Result<Scenario> =
-        patch("${config.baseUrl}/scenarios/${scenarioId.value}?confirmed=true", buildJsonObject {
+    override suspend fun updateScenario(scenarioId: Scenario.Id, blueprint: Blueprint.Json, token: AuthToken): Result<Scenario> =
+        patch("${config.baseUrl}/scenarios/${scenarioId.value}?confirmed=true", token, buildJsonObject {
             put(BlueprintKey, blueprint.value)
         }) { it.toScenario() }
 
-    override suspend fun getBlueprint(scenarioId: Scenario.Id): Result<Blueprint> =
-        get("${config.baseUrl}/scenarios/$scenarioId/blueprint") { responseJson ->
+    override suspend fun getBlueprint(scenarioId: Scenario.Id, token: AuthToken): Result<Blueprint> =
+        get("${config.baseUrl}/scenarios/$scenarioId/blueprint", token) { responseJson ->
             jsonObject(responseJson, ResponseKey, BlueprintKey)?.let { blueprintJson ->
                 blueprintJson[NameKey]?.jsonPrimitive?.content?.let { name ->
                     Blueprint(
@@ -75,9 +75,10 @@ class MakeAdapterImpl(
         scenarioId: Scenario.Id,
         moduleId: Blueprint.Module.Id,
         fieldName: String,
-        data: String
+        data: String,
+        token: AuthToken
     ): Result<Boolean> =
-        put("${config.baseUrl}/scenarios/$scenarioId/data", buildJsonObject {
+        put("${config.baseUrl}/scenarios/$scenarioId/data", token, buildJsonObject {
             put(moduleId.value.toString(), json.encodeToJsonElement(buildJsonObject {
                 put(fieldName, data)
             }))
@@ -93,30 +94,30 @@ class MakeAdapterImpl(
         )
     }
 
-    private suspend fun <T> get(url: String, f: (JsonObject) -> T?): Result<T> =
+    private suspend fun <T> get(url: String, token: AuthToken, f: (JsonObject) -> T?): Result<T> =
         httpClient.get(url) {
-            setHeaders()
+            setHeaders(token)
         }.toResult(f)
 
-    private suspend fun <T> post(url: String, body: JsonObject, f: (JsonObject) -> T?): Result<T> =
+    private suspend fun <T> post(url: String, token: AuthToken, body: JsonObject, f: (JsonObject) -> T?): Result<T> =
         httpClient.post(url) {
-            setHeaders()
+            setHeaders(token)
             setBody(body.toString())
         }.toResult(f)
 
-    private suspend fun <T> put(url: String, body: JsonObject, f: (JsonObject) -> T?): Result<T> =
+    private suspend fun <T> put(url: String, token: AuthToken, body: JsonObject, f: (JsonObject) -> T?): Result<T> =
         httpClient.put(url) {
-            setHeaders()
+            setHeaders(token)
             setBody(body.toString())
         }.toResult(f)
 
-    private suspend fun <T> patch(url: String, body: JsonObject, f: (JsonObject) -> T?): Result<T> =
+    private suspend fun <T> patch(url: String, token: AuthToken, body: JsonObject, f: (JsonObject) -> T?): Result<T> =
         httpClient.patch(url) {
-            setHeaders()
+            setHeaders(token)
             setBody(body.toString())
         }.toResult(f)
 
-    private fun HttpRequestBuilder.setHeaders() {
+    private fun HttpRequestBuilder.setHeaders(token: AuthToken) {
         headers {
             append(HttpHeaders.Authorization, "Token ${token.value}")
         }

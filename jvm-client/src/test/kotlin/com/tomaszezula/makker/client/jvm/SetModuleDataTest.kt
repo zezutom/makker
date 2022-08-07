@@ -12,7 +12,7 @@ import io.mockk.verify
 class SetModuleDataTest : StringSpec() {
     init {
         val makeAdapter = mockk<MakeAdapter>()
-        val makeClient = MakeClientImpl(makeAdapter)
+        val makeClient = DefaultMakeClient(makeAdapter, token)
 
         val fieldName = "field1"
         val data = "hello world"
@@ -22,7 +22,7 @@ class SetModuleDataTest : StringSpec() {
         "Set module data should return a flag" {
             every {
                 runBlocking {
-                    makeAdapter.setModuleData(scenario.id, module.id, fieldName, data)
+                    makeAdapter.setModuleData(scenario.id, module.id, fieldName, data, token)
                 }
             } returns Result.success(true)
             makeClient.setModuleData(scenario.id, module.id, fieldName, data).map {
@@ -30,14 +30,14 @@ class SetModuleDataTest : StringSpec() {
             }
             verify(exactly = 1) {
                 runBlocking {
-                    makeAdapter.setModuleData(scenario.id, module.id, fieldName, data)
+                    makeAdapter.setModuleData(scenario.id, module.id, fieldName, data, token)
                 }
             }
         }
         "Set module data should respect the result returned by the underlying Make adapter" {
             every {
                 runBlocking {
-                    makeAdapter.setModuleData(scenario.id, module.id, fieldName, data)
+                    makeAdapter.setModuleData(scenario.id, module.id, fieldName, data, token)
                 }
             } returns Result.success(false)
             makeClient.setModuleData(scenario.id, module.id, fieldName, data).map {
@@ -48,7 +48,7 @@ class SetModuleDataTest : StringSpec() {
             val throwable = IllegalStateException("Something went wrong!")
             every {
                 runBlocking {
-                    makeAdapter.setModuleData(scenario.id, module.id, fieldName, data)
+                    makeAdapter.setModuleData(scenario.id, module.id, fieldName, data, token)
                 }
             } returns Result.failure(throwable)
             makeClient.setModuleData(scenario.id, module.id, fieldName, data)
@@ -68,7 +68,7 @@ class SetModuleDataTest : StringSpec() {
             fieldMap.entries.forEach {
                 every {
                     runBlocking {
-                        makeAdapter.setModuleData(scenario.id, module.id, it.key, it.value)
+                        makeAdapter.setModuleData(scenario.id, module.id, it.key, it.value, token)
                     }
                 } returns Result.success(true)
             }
@@ -78,7 +78,7 @@ class SetModuleDataTest : StringSpec() {
             fieldMap.entries.forEach {
                 verify(exactly = 1) {
                     runBlocking {
-                        makeAdapter.setModuleData(scenario.id, module.id, it.key, it.value)
+                        makeAdapter.setModuleData(scenario.id, module.id, it.key, it.value, token)
                     }
                 }
             }
@@ -92,7 +92,7 @@ class SetModuleDataTest : StringSpec() {
             fieldMap.entries.forEach {
                 every {
                     runBlocking {
-                        makeAdapter.setModuleData(scenario.id, module.id, it.key, it.value.first)
+                        makeAdapter.setModuleData(scenario.id, module.id, it.key, it.value.first, token)
                     }
                 } returns Result.success(it.value.second)
             }

@@ -1,7 +1,7 @@
 package com.tomaszezula.make.makker.adapter.jvm
 
 import com.tomaszezula.makker.adapter.MakeAdapter
-import com.tomaszezula.makker.adapter.MakeAdapterImpl
+import com.tomaszezula.makker.adapter.DefaultMakeAdapter
 import com.tomaszezula.makker.adapter.MakeConfig
 import com.tomaszezula.makker.adapter.model.AuthToken
 import com.tomaszezula.makker.adapter.model.Blueprint
@@ -56,11 +56,13 @@ class MakeAdapterTest {
                 this.respond(
                     content = ByteReadChannel(com.tomaszezula.make.makker.adapter.jvm.Scenario.response),
                     status = HttpStatusCode.OK,
-                    headers = headersOf()
+                    headers = headersOf(
+                        HttpHeaders.Authorization to listOf("Token ${token.value}")
+                    )
                 )
             }
             assertResult(
-                makeAdapter(engine).createScenario(teamId, folderId, blueprintJson, scheduling),
+                makeAdapter(engine).createScenario(teamId, folderId, blueprintJson, scheduling, token),
                 com.tomaszezula.make.makker.adapter.jvm.Scenario.expected
             )
         }
@@ -84,7 +86,7 @@ class MakeAdapterTest {
                 )
             }
             assertResult(
-                makeAdapter(engine).updateScenario(scenarioId, blueprintJson),
+                makeAdapter(engine).updateScenario(scenarioId, blueprintJson, token),
                 com.tomaszezula.make.makker.adapter.jvm.Scenario.expected
             )
         }
@@ -106,7 +108,7 @@ class MakeAdapterTest {
                 )
             }
             assertResult(
-                makeAdapter(engine).getBlueprint(scenarioId),
+                makeAdapter(engine).getBlueprint(scenarioId, token),
                 com.tomaszezula.make.makker.adapter.jvm.Blueprint.expected
             )
         }
@@ -134,15 +136,14 @@ class MakeAdapterTest {
                 )
             }
             assertResult(
-                makeAdapter(engine).setModuleData(scenarioId, moduleId, fieldName, data),
+                makeAdapter(engine).setModuleData(scenarioId, moduleId, fieldName, data, token),
                 Module.expected
             )
         }
     }
 
     private fun makeAdapter(engine: MockEngine): MakeAdapter {
-        return MakeAdapterImpl(
-            token,
+        return DefaultMakeAdapter(
             config,
             HttpClient(engine),
             Json {

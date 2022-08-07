@@ -1,5 +1,6 @@
 package com.tomaszezula.makker.adapter
 
+import com.tomaszezula.makker.adapter.model.AuthToken
 import com.tomaszezula.makker.adapter.model.Blueprint
 import com.tomaszezula.makker.adapter.model.Blueprint.Module
 import com.tomaszezula.makker.adapter.model.Scenario
@@ -13,20 +14,23 @@ interface MakeAdapter {
         teamId: TeamId,
         folderId: FolderId,
         blueprintJson: Blueprint.Json,
-        scheduling: Scheduling
+        scheduling: Scheduling,
+        token: AuthToken
     ): Result<Scenario>
 
     suspend fun updateScenario(
         scenarioId: Scenario.Id,
-        blueprint: Blueprint.Json
+        blueprint: Blueprint.Json,
+        token: AuthToken
     ): Result<Scenario>
 
-    suspend fun getBlueprint(scenarioId: Scenario.Id): Result<Blueprint>
+    suspend fun getBlueprint(scenarioId: Scenario.Id, token: AuthToken): Result<Blueprint>
 
     suspend fun setModuleData(
         scenarioId: Scenario.Id,
         moduleId: Module.Id,
         fieldName: String,
-        data: String
+        data: String,
+        token: AuthToken
     ): Result<Boolean>
 }

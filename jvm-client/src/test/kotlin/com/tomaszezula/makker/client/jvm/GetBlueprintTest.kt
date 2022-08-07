@@ -13,14 +13,14 @@ import io.mockk.verify
 class GetBlueprintTest : StringSpec() {
     init {
         val makeAdapter = mockk<MakeAdapter>()
-        val makeClient = MakeClientImpl(makeAdapter)
+        val makeClient = DefaultMakeClient(makeAdapter, token)
 
         this.coroutineTestScope = true
 
         "Get blueprint should return the scenario blueprint" {
             every {
                 runBlocking {
-                    makeAdapter.getBlueprint(scenario.id)
+                    makeAdapter.getBlueprint(scenario.id, token)
                 }
             } returns Result.success(blueprint)
 
@@ -38,7 +38,7 @@ class GetBlueprintTest : StringSpec() {
             blueprintMap.entries.forEach {
                 every {
                     runBlocking {
-                        makeAdapter.getBlueprint(it.key)
+                        makeAdapter.getBlueprint(it.key, token)
                     }
                 } returns Result.success(it.value)
             }
@@ -48,7 +48,7 @@ class GetBlueprintTest : StringSpec() {
             blueprintMap.entries.forEach {
                 verify(exactly = 1) {
                     runBlocking {
-                        makeAdapter.getBlueprint(it.key)
+                        makeAdapter.getBlueprint(it.key, token)
                     }
                 }
             }
