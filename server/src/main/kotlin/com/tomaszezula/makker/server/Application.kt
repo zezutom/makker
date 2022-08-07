@@ -36,7 +36,7 @@ fun main() {
     val client = HttpClient(CIO) {
         install(Logging) {
             logger = Logger.DEFAULT
-            level = LogLevel.HEADERS
+            level = LogLevel.INFO
         }
         install(HttpRequestRetry) {
             maxRetries = config.maxRetries()

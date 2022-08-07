@@ -59,7 +59,7 @@ class DefaultMakeAdapter(
         }) { it.toScenario() }
 
     override suspend fun getBlueprint(scenarioId: Scenario.Id, token: AuthToken): Result<Blueprint> =
-        get("${config.baseUrl}/scenarios/$scenarioId/blueprint", token) { responseJson ->
+        get("${config.baseUrl}/scenarios/${scenarioId.value}/blueprint", token) { responseJson ->
             jsonObject(responseJson, ResponseKey, BlueprintKey)?.let { blueprintJson ->
                 blueprintJson[NameKey]?.jsonPrimitive?.content?.let { name ->
                     Blueprint(

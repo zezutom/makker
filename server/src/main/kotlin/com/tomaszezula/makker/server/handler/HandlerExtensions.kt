@@ -9,27 +9,27 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import org.slf4j.Logger
 
-const val AuthTokenHeader = "X-AuthToken"
+const val AuthTokenHeader = "X-Auth-Token"
 
-suspend inline fun <reified T : Request> ApplicationCall.respond(
+suspend inline fun <reified T : Request> respond(
     handler: Handler<T>,
     context: RequestContext,
     logger: Logger,
-    f: (ApplicationCall) -> T
-) {
+    crossinline f: suspend (ApplicationCall) -> T
+): suspend (ApplicationCall) -> Unit = { call ->
     runSuspendCatching {
         when (context) {
-            is AuthenticatedContext -> handler.handle(this.receive(), context.token)
+            is AuthenticatedContext -> handler.handle(call.receive(), context.token)
             is AnonymousContext ->
-                this.toAuthToken()?.let { token ->
-                    handler.handle(f(this), token).getOrThrow()
+                call.toAuthToken()?.let { token ->
+                    handler.handle(f(call), token).getOrThrow()
                 } ?: throw MissingAuthTokenException()
         }
     }.onSuccess {
-        this.toHttp(it as Response)
+        call.toHttp(it as Response)
     }.onFailure {
         logger.warn("Request failed", it)
-        this.toError(it)
+        call.toError(it)
     }
 }
 

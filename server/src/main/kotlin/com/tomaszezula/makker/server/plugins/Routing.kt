@@ -19,32 +19,29 @@ fun Application.configureRouting(
 ) {
     routing {
         get("/blueprint/{scenarioId}") {
-            getBlueprintHandler.handle(call, context) {
+            getBlueprintHandler.handle(context) {
                 it.parameters["scenarioId"]?.let { scenarioId -> GetBlueprintRequest(scenarioId.toLong()) }
                     ?: throw BadRequestException("Missing or invalid input: scenarioId")
-            }
+            }.invoke(call)
         }
         post("/scenario") {
-            createScenarioHandler.handle(call, context)
+            createScenarioHandler.handle(context).invoke(call)
         }
         put("/scenario") {
-            updateScenarioHandler.handle(call, context)
+            updateScenarioHandler.handle(context).invoke(call)
         }
         put("/module") {
-            setModuleDataHandler.handle(call, context)
+            setModuleDataHandler.handle(context).invoke(call)
         }
     }
 }
 
-private suspend inline fun <reified T : Request> Handler<T>.handle(
-    call: ApplicationCall,
-    context: RequestContext
-) = call.respond(this, context, LoggerFactory.getLogger(this::class.java)) {
-    it.receive()
-}
+private suspend inline fun <reified T : Request> Handler<T>.handle(context: RequestContext): suspend (ApplicationCall) -> Unit =
+    respond(this, context, LoggerFactory.getLogger(this::class.java)) {
+        it.receive()
+    }
 
 private suspend inline fun <reified T : Request> Handler<T>.handle(
-    call: ApplicationCall,
     context: RequestContext,
-    f: (ApplicationCall) -> T
-) = call.respond(this, context, LoggerFactory.getLogger(this::class.java), f)
+    crossinline f: suspend (ApplicationCall) -> T
+): suspend (ApplicationCall) -> Unit = respond(this, context, LoggerFactory.getLogger(this::class.java), f)

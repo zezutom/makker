@@ -98,7 +98,7 @@ class MakeAdapterTest {
             val engine = MockEngine { requestData ->
                 assertRequest(
                     requestData,
-                    "${config.baseUrl}/scenarios/$scenarioId/blueprint",
+                    "${config.baseUrl}/scenarios/${scenarioId.value}/blueprint",
                     HttpMethod.Get
                 )
                 this.respond(
