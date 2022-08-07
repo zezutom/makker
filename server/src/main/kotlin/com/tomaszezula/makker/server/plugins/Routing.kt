@@ -18,20 +18,22 @@ fun Application.configureRouting(
     context: RequestContext
 ) {
     routing {
-        get("/blueprint/{scenarioId}") {
-            getBlueprintHandler.handle(context) {
-                it.parameters["scenarioId"]?.let { scenarioId -> GetBlueprintRequest(scenarioId.toLong()) }
-                    ?: throw BadRequestException("Missing or invalid input: scenarioId")
-            }.invoke(call)
-        }
-        post("/scenario") {
-            createScenarioHandler.handle(context).invoke(call)
-        }
-        put("/scenario") {
-            updateScenarioHandler.handle(context).invoke(call)
-        }
-        put("/module") {
-            setModuleDataHandler.handle(context).invoke(call)
+        route("/v1") {
+            get("/blueprint/{scenarioId}") {
+                getBlueprintHandler.handle(context) {
+                    it.parameters["scenarioId"]?.let { scenarioId -> GetBlueprintRequest(scenarioId.toLong()) }
+                        ?: throw BadRequestException("Missing or invalid input: scenarioId")
+                }.invoke(call)
+            }
+            post("/scenario") {
+                createScenarioHandler.handle(context).invoke(call)
+            }
+            put("/scenario") {
+                updateScenarioHandler.handle(context).invoke(call)
+            }
+            put("/module") {
+                setModuleDataHandler.handle(context).invoke(call)
+            }
         }
     }
 }
