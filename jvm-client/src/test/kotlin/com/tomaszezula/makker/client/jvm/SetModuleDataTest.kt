@@ -1,6 +1,6 @@
 package com.tomaszezula.makker.client.jvm
 
-import com.tomaszezula.makker.adapter.MakeAdapter
+import com.tomaszezula.makker.common.MakeAdapter
 import io.kotest.assertions.fail
 import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.StringSpec

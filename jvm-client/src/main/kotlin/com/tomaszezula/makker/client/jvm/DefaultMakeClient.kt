@@ -1,10 +1,10 @@
 package com.tomaszezula.makker.client.jvm
 
-import com.tomaszezula.makker.adapter.MakeAdapter
-import com.tomaszezula.makker.adapter.model.AuthToken
-import com.tomaszezula.makker.adapter.model.Blueprint
-import com.tomaszezula.makker.adapter.model.Scenario
-import com.tomaszezula.makker.adapter.model.Scheduling
+import com.tomaszezula.makker.common.MakeAdapter
+import com.tomaszezula.makker.common.model.AuthToken
+import com.tomaszezula.makker.common.model.Blueprint
+import com.tomaszezula.makker.common.model.Scenario
+import com.tomaszezula.makker.common.model.Scheduling
 import kotlinx.coroutines.*
 import java.nio.file.Files
 import java.nio.file.Path

@@ -1,8 +1,8 @@
 package com.tomaszezula.makker.client.jvm
 
-import com.tomaszezula.makker.adapter.model.Blueprint
-import com.tomaszezula.makker.adapter.model.Scenario
-import com.tomaszezula.makker.adapter.model.Scheduling
+import com.tomaszezula.makker.common.model.Blueprint
+import com.tomaszezula.makker.common.model.Scenario
+import com.tomaszezula.makker.common.model.Scheduling
 import java.nio.file.Path
 
 interface MakeClient {

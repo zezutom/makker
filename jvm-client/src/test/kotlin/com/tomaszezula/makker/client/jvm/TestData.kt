@@ -1,9 +1,9 @@
 package com.tomaszezula.makker.client.jvm
 
-import com.tomaszezula.makker.adapter.model.AuthToken
-import com.tomaszezula.makker.adapter.model.Blueprint
-import com.tomaszezula.makker.adapter.model.IndefiniteScheduling
-import com.tomaszezula.makker.adapter.model.Scenario
+import com.tomaszezula.makker.common.model.AuthToken
+import com.tomaszezula.makker.common.model.Blueprint
+import com.tomaszezula.makker.common.model.IndefiniteScheduling
+import com.tomaszezula.makker.common.model.Scenario
 
 val token = AuthToken("test")
 val teamId = Scenario.TeamId(1)

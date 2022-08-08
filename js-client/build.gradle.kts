@@ -14,16 +14,6 @@ kotlin {
             binaries.executable()
         }
     }
-    sourceSets {
-        val commonMain by creating {
-            dependencies {
-                implementation(project(":make-adapter"))
-            }
-        }
-        val main by getting {
-            dependsOn(commonMain)
-        }
-    }
 }
 
 dependencies {

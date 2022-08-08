@@ -1,8 +1,8 @@
 package com.tomaszezula.makker.server
 
-import com.tomaszezula.makker.adapter.DefaultMakeAdapter
-import com.tomaszezula.makker.adapter.MakeConfig
-import com.tomaszezula.makker.adapter.model.AuthToken
+import com.tomaszezula.makker.common.DefaultMakeAdapter
+import com.tomaszezula.makker.common.MakeConfig
+import com.tomaszezula.makker.common.model.AuthToken
 import com.tomaszezula.makker.server.handler.CreateScenarioHandler
 import com.tomaszezula.makker.server.handler.GetBlueprintHandler
 import com.tomaszezula.makker.server.handler.SetModuleDataHandler

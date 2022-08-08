@@ -1,8 +1,8 @@
 package com.tomaszezula.makker.client.jvm
 
-import com.tomaszezula.makker.adapter.MakeAdapter
-import com.tomaszezula.makker.adapter.model.Blueprint
-import com.tomaszezula.makker.adapter.model.Scenario
+import com.tomaszezula.makker.common.MakeAdapter
+import com.tomaszezula.makker.common.model.Blueprint
+import com.tomaszezula.makker.common.model.Scenario
 import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe

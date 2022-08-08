@@ -1,7 +1,7 @@
 package com.tomaszezula.makker.client.jvm
 
-import com.tomaszezula.makker.adapter.MakeAdapter
-import com.tomaszezula.makker.adapter.model.Blueprint
+import com.tomaszezula.makker.common.MakeAdapter
+import com.tomaszezula.makker.common.model.Blueprint
 import io.kotest.assertions.fail
 import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.StringSpec
@@ -17,7 +17,7 @@ import java.util.*
 class CreateScenarioTest : StringSpec() {
     init {
         val makeAdapter = mockk<MakeAdapter>()
-        val makeClient = DefaultMakeClient(makeAdapter, token)
+        val makeClient: MakeClient = DefaultMakeClient(makeAdapter, token)
 
         this.coroutineTestScope = true
 

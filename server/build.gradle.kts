@@ -1,6 +1,7 @@
 plugins {
     application
     kotlin("jvm")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 val ktorVersion: String by project
@@ -10,19 +11,6 @@ application {
     mainClass.set("com.tomaszezula.makker.server.ApplicationKt")
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
-}
-
-kotlin {
-    sourceSets {
-        val commonMain by creating {
-            dependencies {
-                implementation(project(":make-adapter"))
-            }
-        }
-        val main by getting {
-            dependsOn(commonMain)
-        }
-    }
 }
 
 dependencies {
@@ -36,6 +24,7 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
+    implementation(project(":common"))
     implementation(project(":jvm-client"))
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
 }

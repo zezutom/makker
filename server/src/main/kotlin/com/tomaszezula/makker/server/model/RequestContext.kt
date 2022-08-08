@@ -1,6 +1,6 @@
 package com.tomaszezula.makker.server.model
 
-import com.tomaszezula.makker.adapter.model.AuthToken
+import com.tomaszezula.makker.common.model.AuthToken
 
 sealed interface RequestContext
 

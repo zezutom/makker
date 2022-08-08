@@ -1,6 +1,6 @@
 package com.tomaszezula.makker.client.js
 
-import com.tomaszezula.makker.adapter.model.AuthToken
+import com.tomaszezula.makker.client.js.model.AuthToken
 import com.tomaszezula.makker.client.js.model.Blueprint
 import com.tomaszezula.makker.client.js.model.Scenario
 import io.ktor.client.*
