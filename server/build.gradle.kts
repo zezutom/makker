@@ -2,6 +2,7 @@ plugins {
     application
     kotlin("jvm")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("org.openapi.generator") version "6.0.1"
 }
 
 val ktorVersion: String by project
@@ -11,6 +12,13 @@ application {
     mainClass.set("com.tomaszezula.makker.server.ApplicationKt")
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
+}
+
+openApiGenerate {
+    generatorName.set("openapi")
+    inputSpec.set("$rootDir/server/src/main/resources/specs/api.yml")
+    outputDir.set("$buildDir/generated")
+    validateSpec.set(true)
 }
 
 dependencies {
@@ -27,4 +35,8 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":jvm-client"))
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
+}
+
+tasks.named("build") {
+    dependsOn("openApiGenerate")
 }
