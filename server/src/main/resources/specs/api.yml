@@ -168,18 +168,8 @@ definitions:
   UpdateScenarioRequest:
     type: "object"
     required:
-      - teamId
-      - folderId
       - blueprint
     properties:
-      teamId:
-        type: integer
-        format: int64
-        description: The unique ID of the team in which the scenario will be created.
-      folderId:
-        type: integer
-        format: int64
-        description: The unique ID of the folder in which you want to store created scenario.
       blueprint:
         type: string
         description: The scenario blueprint. To save resources, the blueprint is sent as a string, not as an object.
@@ -188,8 +178,6 @@ definitions:
         default: false
         description: Enable this option in order to pass the scenario blueprint as a Base64-encoded string. This option is disabled by default.
     example:
-      teamId: 1
-      folderId: 1
       blueprint: "{ \"name\": \"Empty integration\", \"flow\": [ { \"id\": 2, \"module\": \"json:ParseJSON\", \"version\": 1, \"metadata\": { \"designer\": { \"x\": -46, \"y\": 47, \"messages\": [ { \"category\": \"last\", \"severity\": \"warning\", \"message\": \"A transformer should not be the last module in the route.\" } ] } } } ], \"metadata\": { \"version\": 1, \"scenario\": { \"roundtrips\": 1, \"maxErrors\": 3, \"autoCommit\": true, \"autoCommitTriggerLast\": true, \"sequential\": false, \"confidential\": false, \"dataloss\": false, \"dlq\": false }, \"designer\": { \"orphans\": [ ] } } }"
   SetModuleDataRequest:
     type: "object"
