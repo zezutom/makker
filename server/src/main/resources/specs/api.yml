@@ -8,7 +8,7 @@ info:
 externalDocs:
   description: "Find out more about Makker"
   url: "https://github.com/zezutom/makker"
-basePath: "/v1"
+basePath: "/"
 tags:
   - name: "Scenarios"
     description: A scenario lets you create and run automated tasks in Make (formerly Integromat).
@@ -16,19 +16,22 @@ tags:
       description: "Find out more"
       url: "https://www.make.com/en/api-documentation/scenarios"
 schemes:
-  - "https"
   - "http"
+  - "https"
 consumes:
   - application/json
 produces:
   - application/json
 paths:
-  /scenarios:
+  /v1/scenarios:
     post:
       tags:
         - Scenarios
-      summary: Create a scenario.
-      description: "Create a new scenario from the provided blueprint"
+      description: |
+        Create a new scenario from the provided blueprint.
+        
+        The `blueprint` can be passed as either a correctly escaped JSON string, or you can also provide a Base64-encoded value.
+
       operationId: "createScenarioV1"
       parameters:
         - name: body
@@ -50,7 +53,7 @@ paths:
           description: "Bad request."
           schema:
             $ref: '#/definitions/ErrorResponse'
-  /scenarios/{scenarioId}:
+  /v1/scenarios/{scenarioId}:
     patch:
       tags:
         - Scenarios
@@ -63,9 +66,11 @@ paths:
           required: true
           type: integer
           format: int64
+          description: The unique ID of the scenario.
         - in: body
           name: body
           required: true
+          description: Scenario definition.
           schema:
             $ref: '#/definitions/UpdateScenarioRequest'
       responses:
@@ -81,7 +86,7 @@ paths:
           description: "Bad request."
           schema:
             $ref: '#/definitions/ErrorResponse'
-  /scenarios/{scenarioId}/blueprint:
+  /v1/scenarios/{scenarioId}/blueprint:
     get:
       tags:
         - Scenarios
@@ -94,6 +99,7 @@ paths:
           required: true
           type: integer
           format: int64
+          description: The unique ID of the scenario.
       responses:
         "200":
           description: "The scenario's blueprint."
@@ -112,6 +118,13 @@ paths:
           required: true
           type: integer
           format: int64
+          description: The unique ID of the scenario.
+        - in: body
+          name: body
+          required: true
+          description: Module update definition.
+          schema:
+            $ref: '#/definitions/SetModuleDataRequest'
       responses:
         "200":
           description: "The update result."
@@ -136,11 +149,22 @@ definitions:
       teamId:
         type: integer
         format: int64
+        description: The unique ID of the team in which the scenario will be created.
       folderId:
         type: integer
         format: int64
+        description: The unique ID of the folder in which you want to store created scenario.
       blueprint:
         type: string
+        description: The scenario blueprint. To save resources, the blueprint is sent as a string, not as an object.
+      encoded:
+        type: boolean
+        default: false
+        description: Enable this option in order to pass the scenario blueprint as a Base64-encoded string. This option is disabled by default.
+    example:
+      teamId: 1
+      folderId: 1
+      blueprint: "{ \"name\": \"Empty integration\", \"flow\": [ { \"id\": 2, \"module\": \"json:ParseJSON\", \"version\": 1, \"metadata\": { \"designer\": { \"x\": -46, \"y\": 47, \"messages\": [ { \"category\": \"last\", \"severity\": \"warning\", \"message\": \"A transformer should not be the last module in the route.\" } ] } } } ], \"metadata\": { \"version\": 1, \"scenario\": { \"roundtrips\": 1, \"maxErrors\": 3, \"autoCommit\": true, \"autoCommitTriggerLast\": true, \"sequential\": false, \"confidential\": false, \"dataloss\": false, \"dlq\": false }, \"designer\": { \"orphans\": [ ] } } }"
   UpdateScenarioRequest:
     type: "object"
     required:
@@ -151,11 +175,49 @@ definitions:
       teamId:
         type: integer
         format: int64
+        description: The unique ID of the team in which the scenario will be created.
       folderId:
         type: integer
         format: int64
+        description: The unique ID of the folder in which you want to store created scenario.
       blueprint:
         type: string
+        description: The scenario blueprint. To save resources, the blueprint is sent as a string, not as an object.
+      encoded:
+        type: boolean
+        default: false
+        description: Enable this option in order to pass the scenario blueprint as a Base64-encoded string. This option is disabled by default.
+    example:
+      teamId: 1
+      folderId: 1
+      blueprint: "{ \"name\": \"Empty integration\", \"flow\": [ { \"id\": 2, \"module\": \"json:ParseJSON\", \"version\": 1, \"metadata\": { \"designer\": { \"x\": -46, \"y\": 47, \"messages\": [ { \"category\": \"last\", \"severity\": \"warning\", \"message\": \"A transformer should not be the last module in the route.\" } ] } } } ], \"metadata\": { \"version\": 1, \"scenario\": { \"roundtrips\": 1, \"maxErrors\": 3, \"autoCommit\": true, \"autoCommitTriggerLast\": true, \"sequential\": false, \"confidential\": false, \"dataloss\": false, \"dlq\": false }, \"designer\": { \"orphans\": [ ] } } }"
+  SetModuleDataRequest:
+    type: "object"
+    required:
+      - scenarioId
+      - moduleId
+      - fieldName
+      - data
+    properties:
+      scenarioId:
+        type: integer
+        format: int64
+        description: The unique ID of the scenario.
+      moduleId:
+        type: integer
+        format: int64
+        description: The unique ID of the module.
+      fieldName:
+        type: string
+        description: The name of the updated field in the module.
+      data:
+        type: string
+        description: The new field value. No validation is performed, the value can be set to anything you want. Use with care.
+    example:
+      scenarioId: 1
+      moduleId: 1
+      fieldName: jsonString
+      data: "{\"greeting\":\"hello world\"}"
   Scenario:
     type: object
     required:
@@ -175,6 +237,11 @@ definitions:
         format: int64
       name:
         type: string
+    example:
+      id: 925
+      teamId: 1
+      folderId: 1
+      name: "New scenario"
   Blueprint:
     type: object
     required:
@@ -183,12 +250,20 @@ definitions:
     properties:
       name:
         type: string
+        description: Scenario name.
       json:
         type: string
+        description: The raw blueprint JSON.
       modules:
         type: array
         items:
           $ref: '#/definitions/Module'
+    example:
+      name: "Empty integration"
+      modules:
+        - id: 2
+          name: "json:ParseJSON"
+      json: "{ \"name\": \"Empty integration\", \"flow\": [ { \"id\": 2, \"module\": \"json:ParseJSON\", \"version\": 1, \"metadata\": { \"designer\": { \"x\": -46, \"y\": 47, \"messages\": [ { \"category\": \"last\", \"severity\": \"warning\", \"message\": \"A transformer should not be the last module in the route.\" } ] } } } ], \"metadata\": { \"version\": 1, \"scenario\": { \"roundtrips\": 1, \"maxErrors\": 3, \"autoCommit\": true, \"autoCommitTriggerLast\": true, \"sequential\": false, \"confidential\": false, \"dataloss\": false, \"dlq\": false }, \"designer\": { \"orphans\": [ ] } } }"
   Module:
     type: object
     required:
@@ -198,8 +273,10 @@ definitions:
       id:
         type: integer
         format: int64
+        description: The unique ID of the module within the scenario.
       name:
         type: string
+        description: The module name.
   UpdateResult:
     type: object
     required:
@@ -207,6 +284,9 @@ definitions:
     properties:
       result:
         type: boolean
+        description: Returns `true` if the operation was successful, `false` otherwise.
+    example:
+      result: true
   ErrorResponse:
     description: "The server encountered an error while processing this request."
     type: object
