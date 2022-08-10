@@ -12,7 +12,7 @@ class SetModuleDataHandler(private val makeAdapter: MakeAdapter) :
     Handler<SetModuleDataRequest> {
     override suspend fun handle(request: SetModuleDataRequest, token: AuthToken): Result<Response> =
         makeAdapter.setModuleData(
-            Scenario.Id(request.scenarioId),
+            Scenario.Id(request.scenarioId!!),
             Blueprint.Module.Id(request.moduleId),
             request.fieldName,
             request.data,

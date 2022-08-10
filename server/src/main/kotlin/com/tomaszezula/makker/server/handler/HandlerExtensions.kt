@@ -49,4 +49,3 @@ suspend fun ApplicationCall.toError(throwable: Throwable) = when (throwable) {
 
 fun ApplicationCall.toAuthToken(): AuthToken? =
     this.request.headers[AuthTokenHeader]?.let { AuthToken(it) }
-

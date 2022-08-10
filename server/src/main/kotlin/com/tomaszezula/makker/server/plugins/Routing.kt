@@ -1,14 +1,13 @@
 package com.tomaszezula.makker.server.plugins
 
 import com.tomaszezula.makker.server.handler.*
-import com.tomaszezula.makker.server.model.GetBlueprintRequest
-import com.tomaszezula.makker.server.model.Request
-import com.tomaszezula.makker.server.model.RequestContext
+import com.tomaszezula.makker.server.model.*
 import io.ktor.server.application.*
-import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.slf4j.LoggerFactory
+
+const val ScenarioId = "scenarioId"
 
 fun Application.configureRouting(
     createScenarioHandler: CreateScenarioHandler,
@@ -23,20 +22,29 @@ fun Application.configureRouting(
                 createScenarioHandler.handle(context).invoke(call)
             }
             patch("/scenarios/{scenarioId}") {
-                updateScenarioHandler.handle(context).invoke(call)
+                updateScenarioHandler.handle(context) { updateScenarioRequest(it) }.invoke(call)
             }
             get("/scenarios/{scenarioId}/blueprint") {
-                getBlueprintHandler.handle(context) {
-                    it.parameters["scenarioId"]?.let { scenarioId -> GetBlueprintRequest(scenarioId.toLong()) }
-                        ?: throw BadRequestException("Missing or invalid input: scenarioId")
-                }.invoke(call)
+                getBlueprintHandler.handle(context) { getBlueprintRequest(it) }.invoke(call)
             }
             put("/scenarios/{scenarioId}/data") {
-                setModuleDataHandler.handle(context).invoke(call)
+                setModuleDataHandler.handle(context) { setModuleDataRequest(it) }.invoke(call)
             }
         }
     }
 }
+
+private suspend fun updateScenarioRequest(call: ApplicationCall) =
+    call.receive<UpdateScenarioRequest>().copy(scenarioId = call.getOrThrow(ScenarioId).toLong())
+
+private suspend fun setModuleDataRequest(call: ApplicationCall) =
+    call.receive<SetModuleDataRequest>().copy(scenarioId = call.getOrThrow(ScenarioId).toLong())
+
+private fun getBlueprintRequest(call: ApplicationCall) =
+    GetBlueprintRequest(call.getOrThrow(ScenarioId).toLong())
+
+fun ApplicationCall.getOrThrow(param: String): String =
+    this.parameters[param] ?: throw IllegalStateException("Parameter '$param' was expected, but it is missing.")
 
 private suspend inline fun <reified T : Request> Handler<T>.handle(context: RequestContext): suspend (ApplicationCall) -> Unit =
     respond(this, context, LoggerFactory.getLogger(this::class.java)) {

@@ -8,11 +8,11 @@ sealed interface Request
 data class CreateScenarioRequest(val teamId: Long, val folderId: Long, val blueprint: String) : Request
 
 @Serializable
-data class UpdateScenarioRequest(val scenarioId: Long, val blueprint: String) : Request
+data class UpdateScenarioRequest(val scenarioId: Long? = null, val blueprint: String) : Request
 
 @Serializable
 data class GetBlueprintRequest(val scenarioId: Long) : Request
 
 @Serializable
-data class SetModuleDataRequest(val scenarioId: Long, val moduleId: Long, val fieldName: String, val data: String) :
+data class SetModuleDataRequest(val scenarioId: Long? = null, val moduleId: Long, val fieldName: String, val data: String) :
     Request

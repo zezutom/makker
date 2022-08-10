@@ -12,7 +12,7 @@ class UpdateScenarioHandler(private val makeAdapter: MakeAdapter) :
     Handler<UpdateScenarioRequest> {
     override suspend fun handle(request: UpdateScenarioRequest, token: AuthToken): Result<Response> =
         makeAdapter.updateScenario(
-            Scenario.Id(request.scenarioId),
+            Scenario.Id(request.scenarioId!!),
             Blueprint.Json(request.blueprint),
             token
         ).map { Ok(it) }
