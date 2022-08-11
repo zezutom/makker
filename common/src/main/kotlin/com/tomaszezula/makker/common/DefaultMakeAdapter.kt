@@ -30,10 +30,12 @@ class DefaultMakeAdapter(
         const val FolderIdKey = "folderId"
         const val IdKey = "id"
         const val ModuleKey = "module"
+        const val MapperKey = "mapper"
         const val NameKey = "name"
         const val ResponseKey = "response"
         const val SchedulingKey = "scheduling"
         const val ScenarioKey = "scenario"
+        const val ValueKey = "value"
         const val Separator = ""
         const val TeamIdKey = "teamId"
     }
@@ -117,13 +119,32 @@ class DefaultMakeAdapter(
                 val updatedProperties = objectMapper.readValue(updatedNode.toString(), Map::class.java)
                 module.mapper.additionalProperties.clear()
                 module.mapper.additionalProperties.putAll(updatedProperties.map { (it.key.toString() to it.value) })
+            } ?: run {
+                blueprint.response.blueprint.flow.forEach { flow ->
+                    replaceModuleData(flow.additionalProperties, moduleId.value.toInt(), data)
+                }
             }
             blueprint
         }.getOrThrow()
 
         return patch("${config.baseUrl}/scenarios/${scenarioId.value}?confirmed=true", token, buildJsonObject {
             put(BlueprintKey, objectMapper.writeValueAsString(updatedBlueprint.response.blueprint))
-        }) { UpdateResult(true) }
+        }) {
+            UpdateResult(true)
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun replaceModuleData(map: MutableMap<String, Any>, key: Int, value: String) {
+        map[RoutesKey]?.let { it as List<*> }?.forEach {
+            replaceModuleData(it as MutableMap<String, Any>, key, value)
+        } ?: map[FlowKey]?.let { it as List<Map<String, Any>> }?.forEach {
+            replaceModuleData(it as MutableMap<String, Any>, key, value)
+        } ?: map[IdKey]?.let { id ->
+            if ((id as Int) == key) {
+                map.replace(MapperKey, mapOf(ValueKey to value))
+            }
+        }
     }
 
     private fun jsonObject(jsonObject: JsonObject?, vararg path: String): JsonObject? {
