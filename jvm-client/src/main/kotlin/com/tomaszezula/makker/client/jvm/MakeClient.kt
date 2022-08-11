@@ -3,6 +3,7 @@ package com.tomaszezula.makker.client.jvm
 import com.tomaszezula.makker.common.model.Blueprint
 import com.tomaszezula.makker.common.model.Scenario
 import com.tomaszezula.makker.common.model.Scheduling
+import com.tomaszezula.makker.common.model.UpdateResult
 import java.nio.file.Path
 
 interface MakeClient {
@@ -42,11 +43,11 @@ interface MakeClient {
         moduleId: Blueprint.Module.Id,
         fieldName: String,
         data: String
-    ): Result<Boolean>
+    ): Result<UpdateResult>
 
     suspend fun setModuleData(
         scenarioId: Scenario.Id,
         moduleId: Blueprint.Module.Id,
         fieldMap: Map<String, String>
-    ): Result<Boolean>
+    ): Result<UpdateResult>
 }

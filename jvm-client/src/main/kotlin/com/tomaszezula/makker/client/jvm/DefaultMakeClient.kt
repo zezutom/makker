@@ -1,10 +1,7 @@
 package com.tomaszezula.makker.client.jvm
 
 import com.tomaszezula.makker.common.MakeAdapter
-import com.tomaszezula.makker.common.model.AuthToken
-import com.tomaszezula.makker.common.model.Blueprint
-import com.tomaszezula.makker.common.model.Scenario
-import com.tomaszezula.makker.common.model.Scheduling
+import com.tomaszezula.makker.common.model.*
 import kotlinx.coroutines.*
 import java.nio.file.Files
 import java.nio.file.Path
@@ -63,21 +60,21 @@ class DefaultMakeClient(private val makeAdapter: MakeAdapter, private val token:
         moduleId: Blueprint.Module.Id,
         fieldName: String,
         data: String
-    ): Result<Boolean> =
+    ): Result<UpdateResult> =
         makeAdapter.setModuleData(scenarioId, moduleId, fieldName, data, token)
 
     override suspend fun setModuleData(
         scenarioId: Scenario.Id,
         moduleId: Blueprint.Module.Id,
         fieldMap: Map<String, String>
-    ): Result<Boolean> =
+    ): Result<UpdateResult> =
         fieldMap.entries.map {
             coroutineScope {
                 async {
                     makeAdapter.setModuleData(scenarioId, moduleId, it.key, it.value, token)
                 }
             }
-        }.awaitAll().toResult().map { rs -> rs.all { it } }
+        }.awaitAll().toResult().map { rs -> UpdateResult(rs.all { it.result }) }
 
     private suspend fun fromFile(filePath: Path): Blueprint.Json {
         val contents = withContext(Dispatchers.IO) {

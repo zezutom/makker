@@ -10,6 +10,7 @@ import com.tomaszezula.makker.common.model.exception.BadRequestException
 import com.tomaszezula.makker.common.model.exception.NotFoundException
 import com.tomaszezula.makker.common.model.exception.ServerErrorException
 import com.tomaszezula.makker.common.model.exception.UnexpectedStatusCode
+import com.tomaszezula.makker.make.api.Mapper
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -25,6 +26,7 @@ class DefaultMakeAdapter(
     companion object {
         const val BlueprintKey = "blueprint"
         const val FlowKey = "flow"
+        const val RoutesKey = "routes"
         const val FolderIdKey = "folderId"
         const val IdKey = "id"
         const val ModuleKey = "module"
@@ -73,12 +75,25 @@ class DefaultMakeAdapter(
                 blueprintJson[NameKey]?.jsonPrimitive?.content?.let { name ->
                     Blueprint(
                         name,
-                        blueprintJson[FlowKey]?.jsonArray?.mapNotNull { it.toModule() } ?: emptyList(),
+                        extractModules(blueprintJson),
                         Blueprint.Json(blueprintJson.toString())
                     )
                 }
             }
         }
+
+    private fun extractModules(
+        jsonObject: JsonObject,
+        modules: List<Blueprint.Module> = emptyList()
+    ): List<Blueprint.Module> {
+        return jsonObject[FlowKey]?.jsonArray?.flatMap { flow ->
+            flow.jsonObject[RoutesKey]?.jsonArray?.flatMap { route ->
+                extractModules(route.jsonObject, modules)
+            } ?: run {
+                flow.toModule()?.let { module -> extractModules(flow.jsonObject, modules.plus(module)) } ?: modules
+            }
+        } ?: modules
+    }
 
     override suspend fun setModuleData(
         scenarioId: Scenario.Id,
@@ -86,13 +101,17 @@ class DefaultMakeAdapter(
         fieldName: String,
         data: String,
         token: AuthToken
-    ): Result<Boolean> {
+    ): Result<UpdateResult> {
         val updatedBlueprint = get("${config.baseUrl}/scenarios/${scenarioId.value}/blueprint", token) { responseJson ->
-            val blueprint = objectMapper.readValue(responseJson.toString(), com.tomaszezula.makker.make.api.Blueprint::class.java)
+            val blueprint =
+                objectMapper.readValue(responseJson.toString(), com.tomaszezula.makker.make.api.Blueprint::class.java)
 
             // Modify the blueprint. This is a hack!
             blueprint.response.blueprint.flow.find { it.id == moduleId.value.toInt() }?.let { module ->
-                val node: ObjectNode = objectMapper.valueToTree(module.mapper.additionalProperties)
+                if (module.mapper == null) {
+                    module.mapper = Mapper()
+                }
+                val node: ObjectNode = objectMapper.valueToTree(module.mapper.additionalProperties.orEmpty())
                 val jsonData: JsonNode = objectMapper.valueToTree(data)
                 val updatedNode: ObjectNode = node.set(fieldName, jsonData)
                 val updatedProperties = objectMapper.readValue(updatedNode.toString(), Map::class.java)
@@ -104,7 +123,7 @@ class DefaultMakeAdapter(
 
         return patch("${config.baseUrl}/scenarios/${scenarioId.value}?confirmed=true", token, buildJsonObject {
             put(BlueprintKey, objectMapper.writeValueAsString(updatedBlueprint.response.blueprint))
-        }) { true }
+        }) { UpdateResult(true) }
     }
 
     private fun jsonObject(jsonObject: JsonObject?, vararg path: String): JsonObject? {

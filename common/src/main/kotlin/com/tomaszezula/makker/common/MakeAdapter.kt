@@ -1,12 +1,9 @@
 package com.tomaszezula.makker.common
 
-import com.tomaszezula.makker.common.model.AuthToken
-import com.tomaszezula.makker.common.model.Blueprint
+import com.tomaszezula.makker.common.model.*
 import com.tomaszezula.makker.common.model.Blueprint.Module
-import com.tomaszezula.makker.common.model.Scenario
 import com.tomaszezula.makker.common.model.Scenario.FolderId
 import com.tomaszezula.makker.common.model.Scenario.TeamId
-import com.tomaszezula.makker.common.model.Scheduling
 
 interface MakeAdapter {
     suspend fun createScenario(
@@ -31,5 +28,5 @@ interface MakeAdapter {
         fieldName: String,
         data: String,
         token: AuthToken
-    ): Result<Boolean>
+    ): Result<UpdateResult>
 }
