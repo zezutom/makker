@@ -2,6 +2,7 @@ package com.tomaszezula.makker.client.jvm
 
 import com.tomaszezula.makker.common.MakeAdapter
 import com.tomaszezula.makker.common.model.*
+import com.tomaszezula.makker.common.toResult
 import kotlinx.coroutines.*
 import java.nio.file.Files
 import java.nio.file.Path
@@ -89,11 +90,4 @@ class DefaultMakeClient(private val makeAdapter: MakeAdapter, private val token:
 
     private fun Blueprint.Json.toPlainText(encoded: Boolean): Blueprint.Json =
         if (encoded) this.decode() else this
-
-    private fun <T> List<Result<T>>.toResult(): Result<List<T>> =
-        if (this.any { it.isFailure }) {
-            Result.failure(IllegalStateException("Operation failed for one or more fields."))
-        } else {
-            Result.success(this.map { it.getOrThrow() })
-        }
 }

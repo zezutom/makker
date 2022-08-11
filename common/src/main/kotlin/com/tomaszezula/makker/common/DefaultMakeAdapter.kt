@@ -35,7 +35,6 @@ class DefaultMakeAdapter(
         const val ResponseKey = "response"
         const val SchedulingKey = "scheduling"
         const val ScenarioKey = "scenario"
-        const val ValueKey = "value"
         const val Separator = ""
         const val TeamIdKey = "teamId"
     }
@@ -121,7 +120,7 @@ class DefaultMakeAdapter(
                 module.mapper.additionalProperties.putAll(updatedProperties.map { (it.key.toString() to it.value) })
             } ?: run {
                 blueprint.response.blueprint.flow.forEach { flow ->
-                    replaceModuleData(flow.additionalProperties, moduleId.value.toInt(), data)
+                    replaceModuleData(flow.additionalProperties, moduleId.value.toInt(), fieldName, data)
                 }
             }
             blueprint
@@ -135,14 +134,14 @@ class DefaultMakeAdapter(
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun replaceModuleData(map: MutableMap<String, Any>, key: Int, value: String) {
+    private fun replaceModuleData(map: MutableMap<String, Any>, moduleId: Int, key: String, value: String) {
         map[RoutesKey]?.let { it as List<*> }?.forEach {
-            replaceModuleData(it as MutableMap<String, Any>, key, value)
+            replaceModuleData(it as MutableMap<String, Any>, moduleId, key, value)
         } ?: map[FlowKey]?.let { it as List<Map<String, Any>> }?.forEach {
-            replaceModuleData(it as MutableMap<String, Any>, key, value)
+            replaceModuleData(it as MutableMap<String, Any>, moduleId, key, value)
         } ?: map[IdKey]?.let { id ->
-            if ((id as Int) == key) {
-                map.replace(MapperKey, mapOf(ValueKey to value))
+            if ((id as Int) == moduleId) {
+                map.replace(MapperKey, mapOf(key to value))
             }
         }
     }

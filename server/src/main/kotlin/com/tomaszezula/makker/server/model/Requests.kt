@@ -14,5 +14,8 @@ data class UpdateScenarioRequest(val scenarioId: Long? = null, val blueprint: St
 data class GetBlueprintRequest(val scenarioId: Long) : Request
 
 @Serializable
-data class SetModuleDataRequest(val scenarioId: Long? = null, val moduleId: Long, val fieldName: String, val data: String) :
-    Request
+data class SetModuleDataRequest(val scenarioId: Long? = null, val modules: List<Module>) :
+    Request {
+    @Serializable
+    data class Module(val moduleId: Long, val key: String, val value: String)
+}
