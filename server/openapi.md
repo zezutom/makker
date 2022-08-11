@@ -1,23 +1,3 @@
----
-title: Makker API Server v1.0.0
-language_tabs:
-  - shell: Shell
-  - http: HTTP
-  - javascript: JavaScript
-  - ruby: Ruby
-  - python: Python
-  - php: PHP
-  - java: Java
-  - go: Go
-toc_footers:
-  - <a href="https://github.com/zezutom/makker">Find out more about Makker</a>
-includes: []
-search: true
-highlight_theme: darkula
-headingLevel: 2
-
----
-
 <!-- Generator: Widdershins v4.0.1 -->
 
 <h1 id="makker-api-server">Makker API Server v1.0.0</h1>
@@ -29,8 +9,6 @@ Make (formerly Integromat) connector suite. Choose how do you want to manage you
 Base URLs:
 
 * <a href="/">/</a>
-
-Email: <a href="mailto:zezulatomas@gmail.com">Support</a> 
 
 <h1 id="makker-api-server-scenarios">Scenarios</h1>
 
@@ -103,8 +81,6 @@ Updates a scenario by uploading of a new or updated blueprint
 
 ```json
 {
-  "teamId": 1,
-  "folderId": 1,
   "blueprint": "{ \"name\": \"Empty integration\", \"flow\": [ { \"id\": 2, \"module\": \"json:ParseJSON\", \"version\": 1, \"metadata\": { \"designer\": { \"x\": -46, \"y\": 47, \"messages\": [ { \"category\": \"last\", \"severity\": \"warning\", \"message\": \"A transformer should not be the last module in the route.\" } ] } } } ], \"metadata\": { \"version\": 1, \"scenario\": { \"roundtrips\": 1, \"maxErrors\": 3, \"autoCommit\": true, \"autoCommitTriggerLast\": true, \"sequential\": false, \"confidential\": false, \"dataloss\": false, \"dlq\": false }, \"designer\": { \"orphans\": [ ] } } }"
 }
 ```
@@ -199,9 +175,18 @@ Updates a specific module in a scenario
 ```json
 {
   "scenarioId": 1,
-  "moduleId": 1,
-  "fieldName": "jsonString",
-  "data": "{\"greeting\":\"hello world\"}"
+  "modules": [
+    {
+      "moduleId": 1,
+      "key": "json",
+      "value": "{\"greeting\":\"hello world\"}"
+    },
+    {
+      "moduleId": 2,
+      "key": "value",
+      "value": "hello world!"
+    }
+  ]
 }
 ```
 
@@ -270,8 +255,6 @@ This operation does not require authentication
 
 ```json
 {
-  "teamId": 1,
-  "folderId": 1,
   "blueprint": "{ \"name\": \"Empty integration\", \"flow\": [ { \"id\": 2, \"module\": \"json:ParseJSON\", \"version\": 1, \"metadata\": { \"designer\": { \"x\": -46, \"y\": 47, \"messages\": [ { \"category\": \"last\", \"severity\": \"warning\", \"message\": \"A transformer should not be the last module in the route.\" } ] } } } ], \"metadata\": { \"version\": 1, \"scenario\": { \"roundtrips\": 1, \"maxErrors\": 3, \"autoCommit\": true, \"autoCommitTriggerLast\": true, \"sequential\": false, \"confidential\": false, \"dataloss\": false, \"dlq\": false }, \"designer\": { \"orphans\": [ ] } } }"
 }
 
@@ -281,8 +264,6 @@ This operation does not require authentication
 
 |Name|Type|Required|Restrictions|Description|
 |---|---|---|---|---|
-|teamId|integer(int64)|true|none|The unique ID of the team in which the scenario will be created.|
-|folderId|integer(int64)|true|none|The unique ID of the folder in which you want to store created scenario.|
 |blueprint|string|true|none|The scenario blueprint. To save resources, the blueprint is sent as a string, not as an object.|
 |encoded|boolean|false|none|Enable this option in order to pass the scenario blueprint as a Base64-encoded string. This option is disabled by default.|
 
@@ -296,9 +277,18 @@ This operation does not require authentication
 ```json
 {
   "scenarioId": 1,
-  "moduleId": 1,
-  "fieldName": "jsonString",
-  "data": "{\"greeting\":\"hello world\"}"
+  "modules": [
+    {
+      "moduleId": 1,
+      "key": "json",
+      "value": "{\"greeting\":\"hello world\"}"
+    },
+    {
+      "moduleId": 2,
+      "key": "value",
+      "value": "hello world!"
+    }
+  ]
 }
 
 ```
@@ -308,9 +298,31 @@ This operation does not require authentication
 |Name|Type|Required|Restrictions|Description|
 |---|---|---|---|---|
 |scenarioId|integer(int64)|true|none|The unique ID of the scenario.|
-|moduleId|integer(int64)|true|none|The unique ID of the module.|
-|fieldName|string|true|none|The name of the updated field in the module.|
-|data|string|true|none|The new field value. No validation is performed, the value can be set to anything you want. Use with care.|
+|modules|[[ModuleUpdate](#schemamoduleupdate)]|true|none|none|
+
+<h2 id="tocS_ModuleUpdate">ModuleUpdate</h2>
+<!-- backwards compatibility -->
+<a id="schemamoduleupdate"></a>
+<a id="schema_ModuleUpdate"></a>
+<a id="tocSmoduleupdate"></a>
+<a id="tocsmoduleupdate"></a>
+
+```json
+{
+  "moduleId": 0,
+  "key": "string",
+  "value": "string"
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|moduleId|integer(int64)|false|none|The unique ID of the module.|
+|key|string|false|none|The name of the updated field in the module.|
+|value|string|false|none|The new field value. No validation is performed, the value can be set to anything you want. Use with care.|
 
 <h2 id="tocS_Scenario">Scenario</h2>
 <!-- backwards compatibility -->

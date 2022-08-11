@@ -3,8 +3,6 @@ info:
   description: "Make (formerly Integromat) connector suite. Choose how do you want to manage your low-code and no-code scenarios from your code!"
   version: "1.0.0"
   title: "Makker API Server"
-  contact:
-    email: "zezulatomas@gmail.com"
 externalDocs:
   description: "Find out more about Makker"
   url: "https://github.com/zezutom/makker"
@@ -183,6 +181,7 @@ definitions:
     type: "object"
     required:
       - scenarioId
+      - modules
       - moduleId
       - fieldName
       - data
@@ -191,21 +190,32 @@ definitions:
         type: integer
         format: int64
         description: The unique ID of the scenario.
+      modules:
+        type: array
+        items:
+          $ref: '#/definitions/ModuleUpdate'
+    example:
+      scenarioId: 1
+      modules:
+        - moduleId: 1
+          key: json
+          value: "{\"greeting\":\"hello world\"}"
+        - moduleId: 2
+          key: value
+          value: "hello world!"
+  ModuleUpdate:
+    type: object
+    properties:
       moduleId:
         type: integer
         format: int64
         description: The unique ID of the module.
-      fieldName:
+      key:
         type: string
         description: The name of the updated field in the module.
-      data:
+      value:
         type: string
         description: The new field value. No validation is performed, the value can be set to anything you want. Use with care.
-    example:
-      scenarioId: 1
-      moduleId: 1
-      fieldName: jsonString
-      data: "{\"greeting\":\"hello world\"}"
   Scenario:
     type: object
     required:
