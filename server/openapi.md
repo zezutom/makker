@@ -223,16 +223,20 @@ http://localhost:8080/v1/scenarios/471310/data \
 
 ```json
 {
-  "scenarioId": 1,
   "modules": [
     {
-      "moduleId": 1,
-      "key": "json",
-      "value": "{\"greeting\":\"hello world\"}"
+      "moduleId": 9,
+      "key": "value",
+      "value": "{{5.greeting}}"
     },
     {
-      "moduleId": 2,
+      "moduleId": 12,
       "key": "value",
+      "value": "{{5.greeting}}"
+    },
+    {
+      "moduleId": 13,
+      "key": "json",
       "value": "hello world!"
     }
   ]
@@ -325,16 +329,20 @@ This operation does not require authentication
 
 ```json
 {
-  "scenarioId": 1,
   "modules": [
     {
-      "moduleId": 1,
-      "key": "json",
-      "value": "{\"greeting\":\"hello world\"}"
+      "moduleId": 9,
+      "key": "value",
+      "value": "{{5.greeting}}"
     },
     {
-      "moduleId": 2,
+      "moduleId": 12,
       "key": "value",
+      "value": "{{5.greeting}}"
+    },
+    {
+      "moduleId": 13,
+      "key": "json",
       "value": "hello world!"
     }
   ]
@@ -346,7 +354,6 @@ This operation does not require authentication
 
 |Name|Type|Required|Restrictions|Description|
 |---|---|---|---|---|
-|scenarioId|integer(int64)|true|none|The unique ID of the scenario.|
 |modules|[[ModuleUpdate](#schemamoduleupdate)]|true|none|none|
 
 <h2 id="tocS_ModuleUpdate">ModuleUpdate</h2>

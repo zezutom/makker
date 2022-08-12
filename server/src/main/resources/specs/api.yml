@@ -238,28 +238,22 @@ definitions:
   SetModuleDataRequest:
     type: "object"
     required:
-      - scenarioId
       - modules
-      - moduleId
-      - fieldName
-      - data
     properties:
-      scenarioId:
-        type: integer
-        format: int64
-        description: The unique ID of the scenario.
       modules:
         type: array
         items:
           $ref: '#/definitions/ModuleUpdate'
     example:
-      scenarioId: 1
       modules:
-        - moduleId: 1
-          key: json
-          value: "{\"greeting\":\"hello world\"}"
-        - moduleId: 2
-          key: value
+        - moduleId: 9
+          key: "value"
+          value: "{{5.greeting}}"
+        - moduleId: 12
+          key: "value"
+          value: "{{5.greeting}}"
+        - moduleId: 13
+          key: "json"
           value: "hello world!"
   ModuleUpdate:
     type: object
