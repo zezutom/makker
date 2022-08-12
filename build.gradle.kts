@@ -4,6 +4,8 @@ plugins {
     kotlin("jvm") version kotlinVersion apply false
     kotlin("multiplatform") version kotlinVersion apply false
     id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion apply false
+    id("org.openapi.generator") version "6.0.1" apply false
+    id("io.ktor.plugin") version "2.1.0" apply false
 }
 
 group = "com.tomaszezula.makker"

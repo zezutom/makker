@@ -4,6 +4,7 @@ import com.tomaszezula.makker.server.handler.*
 import com.tomaszezula.makker.server.model.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.slf4j.LoggerFactory
 
@@ -17,6 +18,9 @@ fun Application.configureRouting(
     context: RequestContext
 ) {
     routing {
+        get("/") {
+            call.respond("Makker Server is up and running.")
+        }
         route("/v1") {
             post("/scenarios") {
                 createScenarioHandler.handle(context).invoke(call)

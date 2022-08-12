@@ -2,7 +2,8 @@ plugins {
     application
     kotlin("jvm")
     id("org.jetbrains.kotlin.plugin.serialization")
-    id("org.openapi.generator") version "6.0.1"
+    id("org.openapi.generator")
+    id("io.ktor.plugin")
 }
 
 val ktorVersion: String by project
@@ -19,6 +20,12 @@ openApiGenerate {
     inputSpec.set("$rootDir/server/src/main/resources/specs/api.yml")
     outputDir.set("$buildDir/generated")
     validateSpec.set(true)
+}
+
+ktor {
+    fatJar {
+        archiveFileName.set("makker-server.jar")
+    }
 }
 
 dependencies {
