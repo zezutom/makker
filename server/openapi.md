@@ -26,6 +26,18 @@ Create a new scenario from the provided blueprint.
 
 The `blueprint` can be passed as either a correctly escaped JSON string, or you can also provide a Base64-encoded value.
 
+```
+curl -X POST \
+http://localhost:8080/v1/scenarios \
+-H 'content-type: application/json' \
+-H 'x-auth-token: YOUR_AUTH_TOKEN' \
+-d '{
+  "teamId": 1,
+  "folderId": 2,
+  "blueprint": "{ \"name\": \"Empty integration\", \"flow\": [ { \"id\": 2, \"module\": \"json:ParseJSON\", \"version\": 1, \"metadata\": { \"designer\": { \"x\": -46, \"y\": 47, \"messages\": [ { \"category\": \"last\", \"severity\": \"warning\", \"message\": \"A transformer should not be the last module in the route.\" } ] } } } ], \"metadata\": { \"version\": 1, \"scenario\": { \"roundtrips\": 1, \"maxErrors\": 3, \"autoCommit\": true, \"autoCommitTriggerLast\": true, \"sequential\": false, \"confidential\": false, \"dataloss\": false, \"dlq\": false }, \"designer\": { \"orphans\": [ ] } } }"
+}'
+```
+
 > Body parameter
 
 ```json
@@ -73,9 +85,17 @@ This operation does not require authentication
 
 `PATCH /v1/scenarios/{scenarioId}`
 
-*Update a scenario.*
+Updates a scenario by uploading of a new or updated blueprint.
 
-Updates a scenario by uploading of a new or updated blueprint
+```
+curl -X PATCH \
+http://localhost:8080/v1/scenarios/1 \
+-H 'content-type: application/json' \
+-H 'x-auth-token: YOUR_AUTH_TOKEN' \
+-d '{
+  "blueprint": "{ \"name\": \"Updated scenario\", \"flow\": [ { \"id\": 2, \"module\": \"json:ParseJSON\", \"version\": 1, \"metadata\": { \"designer\": { \"x\": -46, \"y\": 47, \"messages\": [ { \"category\": \"last\", \"severity\": \"warning\", \"message\": \"A transformer should not be the last module in the route.\" } ] } } } ], \"metadata\": { \"version\": 1, \"scenario\": { \"roundtrips\": 1, \"maxErrors\": 3, \"autoCommit\": true, \"autoCommitTriggerLast\": true, \"sequential\": false, \"confidential\": false, \"dataloss\": false, \"dlq\": false }, \"designer\": { \"orphans\": [ ] } } }"
+}'
+```
 
 > Body parameter
 
@@ -123,9 +143,14 @@ This operation does not require authentication
 
 `GET /v1/scenarios/{scenarioId}/blueprint`
 
-*Get scenario's blueprint.*
-
 Download the blueprint (scenario definition) as a JSON string.
+
+```
+curl -X GET \
+http://localhost:8080/v1/scenarios/1/blueprint \
+-H 'content-type: application/json' \
+-H 'x-auth-token: YOUR_AUTH_TOKEN'
+```
 
 <h3 id="getscenarioblueprintv1-parameters">Parameters</h3>
 
@@ -166,9 +191,33 @@ This operation does not require authentication
 
 `PUT /v1/scenarios/{scenarioId}/data`
 
-*Set module data.*
+Updates a specific module in a scenario.
 
-Updates a specific module in a scenario
+```
+curl -X PUT \
+http://localhost:8080/v1/scenarios/471310/data \
+-H 'content-type: application/json' \
+-H 'x-auth-token: YOUR_AUTH_TOKEN' \
+-d '{
+  "modules": [
+    {
+      "moduleId": 9,
+      "key": "value",
+      "value": "{{5.greeting}}"
+    },
+    {
+      "moduleId": 12,
+      "key": "value",
+      "value": "{{5.greeting}}"
+    },
+    {
+      "moduleId": 13,
+      "key": "json",
+      "value": "hello world!"
+    }
+  ]
+}'
+```
 
 > Body parameter
 
