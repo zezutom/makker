@@ -9,9 +9,9 @@ Do you want to build your own server or client connected to Make, but don't want
 
 Make Adapter is a low-level Make connector.
 * Matches the Make API almost 1:1.
-* Platform independent. Plug it into your JVM, JS or native projects.
+* Provides a common logic reusable across your (JVM) client and server implementations.
 
-[Check it out](./make-adapter)
+[Check it out](./common)
 
 ## Server
 You have a web client, but it cannot connect directly to the Make API

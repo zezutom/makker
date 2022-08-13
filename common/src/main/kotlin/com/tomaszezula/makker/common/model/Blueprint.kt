@@ -11,6 +11,5 @@ data class Blueprint(val name: String, val modules: List<Module>, val json: Json
         value class Id(val value: Long)
     }
     @Serializable
-    @JvmInline
-    value class Json(val value: String)
+    data class Json(val value: String, val encoded: Boolean = false)
 }

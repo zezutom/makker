@@ -1,9 +1,7 @@
 package com.tomaszezula.makker.client.jvm
 
-import com.tomaszezula.makker.common.model.Blueprint
-import com.tomaszezula.makker.common.model.Scenario
-import com.tomaszezula.makker.common.model.Scheduling
-import com.tomaszezula.makker.common.model.UpdateResult
+import com.tomaszezula.makker.client.jvm.model.ModuleUpdate
+import com.tomaszezula.makker.common.model.*
 import java.nio.file.Path
 
 interface MakeClient {
@@ -11,22 +9,21 @@ interface MakeClient {
     suspend fun createScenario(
         teamId: Scenario.TeamId,
         folderId: Scenario.FolderId,
-        blueprintJson: Blueprint.Json,
-        scheduling: Scheduling,
-        encoded: Boolean = false
+        blueprint: Blueprint.Json,
+        scheduling: Scheduling = IndefiniteScheduling(),
     ): Result<Scenario>
 
     suspend fun createScenario(
         teamId: Scenario.TeamId,
         folderId: Scenario.FolderId,
-        scheduling: Scheduling,
-        filePath: Path
+        filePath: Path,
+        scheduling: Scheduling = IndefiniteScheduling(),
     ): Result<Scenario>
+
 
     suspend fun updateScenario(
         scenarioId: Scenario.Id,
-        blueprint: Blueprint.Json,
-        encoded: Boolean = false
+        blueprint: Blueprint.Json
     ): Result<Scenario>
 
     suspend fun updateScenario(
@@ -41,13 +38,12 @@ interface MakeClient {
     suspend fun setModuleData(
         scenarioId: Scenario.Id,
         moduleId: Blueprint.Module.Id,
-        fieldName: String,
-        data: String
+        key: String,
+        value: String
     ): Result<UpdateResult>
 
-    suspend fun setModuleData(
+    suspend fun setModuleDataInBulk(
         scenarioId: Scenario.Id,
-        moduleId: Blueprint.Module.Id,
-        fieldMap: Map<String, String>
+        moduleUpdates: List<ModuleUpdate>
     ): Result<UpdateResult>
 }

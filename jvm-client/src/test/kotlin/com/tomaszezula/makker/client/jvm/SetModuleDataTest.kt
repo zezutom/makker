@@ -1,6 +1,9 @@
 package com.tomaszezula.makker.client.jvm
 
+import com.tomaszezula.makker.client.jvm.model.ModuleUpdate
 import com.tomaszezula.makker.common.MakeAdapter
+import com.tomaszezula.makker.common.model.Blueprint
+import com.tomaszezula.makker.common.model.UpdateResult
 import io.kotest.assertions.fail
 import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.StringSpec
@@ -19,14 +22,14 @@ class SetModuleDataTest : StringSpec() {
 
         this.coroutineTestScope = true
 
-        "Set module data should return a flag" {
+        "Set module data should succeed" {
             every {
                 runBlocking {
                     makeAdapter.setModuleData(scenario.id, module.id, fieldName, data, token)
                 }
-            } returns Result.success(true)
+            } returns Result.success(UpdateResult(true))
             makeClient.setModuleData(scenario.id, module.id, fieldName, data).map {
-                it shouldBe true
+                it shouldBe UpdateResult.Success
             }
             verify(exactly = 1) {
                 runBlocking {
@@ -39,9 +42,9 @@ class SetModuleDataTest : StringSpec() {
                 runBlocking {
                     makeAdapter.setModuleData(scenario.id, module.id, fieldName, data, token)
                 }
-            } returns Result.success(false)
+            } returns Result.success(UpdateResult.Failure)
             makeClient.setModuleData(scenario.id, module.id, fieldName, data).map {
-                it shouldBe false
+                it shouldBe UpdateResult.Failure
             }
         }
         "Set module data should fail when the underlying Make adapter fails" {
@@ -60,44 +63,45 @@ class SetModuleDataTest : StringSpec() {
                 }
         }
         "Set module data should handle bulk changes" {
-            val fieldMap = mapOf(
-                "field1" to "data1",
-                "field2" to "data2",
-                "field3" to "data3"
+            val moduleUpdates = listOf(
+                ModuleUpdate(Blueprint.Module.Id(1), "field1", "data1"),
+                ModuleUpdate(Blueprint.Module.Id(2), "field2", "data2"),
+                ModuleUpdate(Blueprint.Module.Id(3), "field3", "data3")
             )
-            fieldMap.entries.forEach {
+            moduleUpdates.forEach {
                 every {
                     runBlocking {
-                        makeAdapter.setModuleData(scenario.id, module.id, it.key, it.value, token)
+                        makeAdapter.setModuleData(scenario.id, it.moduleId, it.key, it.value, token)
                     }
-                } returns Result.success(true)
+                } returns Result.success(UpdateResult.Success)
             }
-            makeClient.setModuleData(scenario.id, module.id, fieldMap).map {
-                it shouldBe true
+            makeClient.setModuleDataInBulk(scenario.id, moduleUpdates).map {
+                it shouldBe UpdateResult.Success
             }
-            fieldMap.entries.forEach {
+
+            moduleUpdates.forEach {
                 verify(exactly = 1) {
                     runBlocking {
-                        makeAdapter.setModuleData(scenario.id, module.id, it.key, it.value, token)
+                        makeAdapter.setModuleData(scenario.id, it.moduleId, it.key, it.value, token)
                     }
                 }
             }
         }
         "Set module data should only return success when all operations are successful" {
-            val fieldMap = mapOf(
-                "field1" to Pair("data1", true),
-                "field2" to Pair("data2", false),
-                "field3" to Pair("data3", true)
+            val moduleUpdateMap = mapOf(
+                ModuleUpdate(Blueprint.Module.Id(1), "field1", "data1") to true,
+                ModuleUpdate(Blueprint.Module.Id(2), "field2", "data2") to false,
+                ModuleUpdate(Blueprint.Module.Id(3), "field3", "data3") to true
             )
-            fieldMap.entries.forEach {
+            moduleUpdateMap.entries.forEach {
                 every {
                     runBlocking {
-                        makeAdapter.setModuleData(scenario.id, module.id, it.key, it.value.first, token)
+                        makeAdapter.setModuleData(scenario.id, it.key.moduleId, it.key.key, it.key.value, token)
                     }
-                } returns Result.success(it.value.second)
+                } returns Result.success(UpdateResult(it.value))
             }
-            makeClient.setModuleData(scenario.id, module.id, fieldMap.map { it.key to it.value.first }.toMap()).map {
-                it shouldBe false
+            makeClient.setModuleDataInBulk(scenario.id, moduleUpdateMap.keys.toList()).map {
+                it shouldBe UpdateResult.Failure
             }
         }
     }

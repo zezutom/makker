@@ -16,6 +16,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.serialization.json.*
+import java.util.*
 
 class DefaultMakeAdapter(
     private val config: MakeConfig,
@@ -129,7 +130,7 @@ class DefaultMakeAdapter(
         return patch("${config.baseUrl}/scenarios/${scenarioId.value}?confirmed=true", token, buildJsonObject {
             put(BlueprintKey, objectMapper.writeValueAsString(updatedBlueprint.response.blueprint))
         }) {
-            UpdateResult(true)
+            UpdateResult.Success
         }
     }
 
@@ -215,5 +216,6 @@ class DefaultMakeAdapter(
         }
 
     private fun Blueprint.Json.toJson(): String =
-        this.value.lineSequence().map { it.trim() }.joinToString(Separator)
+        (if (this.encoded) String(Base64.getDecoder().decode(this.value)) else this.value)
+            .lineSequence().map { it.trim() }.joinToString(Separator)
 }

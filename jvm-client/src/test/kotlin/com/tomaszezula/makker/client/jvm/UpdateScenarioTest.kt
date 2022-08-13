@@ -57,14 +57,17 @@ class UpdateScenarioTest : StringSpec() {
         }
 
         "Update scenario should accept a Base64-encoded blueprint" {
+            val encodedJson = Blueprint.Json(
+                Base64.getEncoder().encodeToString(blueprint.json.value.toByteArray()),
+                encoded = true
+            )
             every {
                 runBlocking {
-                    makeAdapter.updateScenario(scenario.id, blueprint.json, token)
+                    makeAdapter.updateScenario(scenario.id, encodedJson, token)
                 }
             } returns Result.success(updatedScenario)
 
-            val encodedJson = Blueprint.Json(Base64.getEncoder().encodeToString(blueprint.json.value.toByteArray()))
-            makeClient.updateScenario(scenario.id, encodedJson, encoded = true).map {
+            makeClient.updateScenario(scenario.id, encodedJson).map {
                 it shouldBe updatedScenario
             }
         }
@@ -77,7 +80,7 @@ class UpdateScenarioTest : StringSpec() {
             } returns Result.success(updatedScenario)
 
             mockkStatic(Files::class)
-            every { Files.readAllLines(any())} returns listOf(blueprint.json.value)
+            every { Files.readAllLines(any()) } returns listOf(blueprint.json.value)
 
             makeClient.updateScenario(scenario.id, Path.of("blueprint.json")).map {
                 it shouldBe updatedScenario

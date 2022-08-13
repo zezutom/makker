@@ -1,12 +1,12 @@
 package com.tomaszezula.makker.client.jvm
 
+import com.tomaszezula.makker.client.jvm.model.ModuleUpdate
 import com.tomaszezula.makker.common.MakeAdapter
 import com.tomaszezula.makker.common.model.*
 import com.tomaszezula.makker.common.toResult
 import kotlinx.coroutines.*
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
 
 class DefaultMakeClient(private val makeAdapter: MakeAdapter, private val token: AuthToken) : MakeClient {
 
@@ -17,26 +17,24 @@ class DefaultMakeClient(private val makeAdapter: MakeAdapter, private val token:
     override suspend fun createScenario(
         teamId: Scenario.TeamId,
         folderId: Scenario.FolderId,
-        blueprintJson: Blueprint.Json,
-        scheduling: Scheduling,
-        encoded: Boolean
+        blueprint: Blueprint.Json,
+        scheduling: Scheduling
     ): Result<Scenario> =
-        makeAdapter.createScenario(teamId, folderId, blueprintJson.toPlainText(encoded), scheduling, token)
+        makeAdapter.createScenario(teamId, folderId, blueprint, scheduling, token)
 
     override suspend fun createScenario(
         teamId: Scenario.TeamId,
         folderId: Scenario.FolderId,
-        scheduling: Scheduling,
-        filePath: Path
+        filePath: Path,
+        scheduling: Scheduling
     ): Result<Scenario> =
         makeAdapter.createScenario(teamId, folderId, fromFile(filePath), scheduling, token)
 
     override suspend fun updateScenario(
         scenarioId: Scenario.Id,
-        blueprint: Blueprint.Json,
-        encoded: Boolean
+        blueprint: Blueprint.Json
     ): Result<Scenario> =
-        makeAdapter.updateScenario(scenarioId, blueprint.toPlainText(encoded), token)
+        makeAdapter.updateScenario(scenarioId, blueprint, token)
 
     override suspend fun updateScenario(
         scenarioId: Scenario.Id,
@@ -59,20 +57,19 @@ class DefaultMakeClient(private val makeAdapter: MakeAdapter, private val token:
     override suspend fun setModuleData(
         scenarioId: Scenario.Id,
         moduleId: Blueprint.Module.Id,
-        fieldName: String,
-        data: String
+        key: String,
+        value: String
     ): Result<UpdateResult> =
-        makeAdapter.setModuleData(scenarioId, moduleId, fieldName, data, token)
+        makeAdapter.setModuleData(scenarioId, moduleId, key, value, token)
 
-    override suspend fun setModuleData(
+    override suspend fun setModuleDataInBulk(
         scenarioId: Scenario.Id,
-        moduleId: Blueprint.Module.Id,
-        fieldMap: Map<String, String>
+        moduleUpdates: List<ModuleUpdate>
     ): Result<UpdateResult> =
-        fieldMap.entries.map {
+        moduleUpdates.map {
             coroutineScope {
                 async {
-                    makeAdapter.setModuleData(scenarioId, moduleId, it.key, it.value, token)
+                    makeAdapter.setModuleData(scenarioId, it.moduleId, it.key, it.value, token)
                 }
             }
         }.awaitAll().toResult().map { rs -> UpdateResult(rs.all { it.result }) }
@@ -83,11 +80,4 @@ class DefaultMakeClient(private val makeAdapter: MakeAdapter, private val token:
         }.joinToString(Separator) { it.trim() }
         return Blueprint.Json(contents)
     }
-
-
-    private fun Blueprint.Json.decode(): Blueprint.Json =
-        Blueprint.Json(String(Base64.getDecoder().decode(this.value)))
-
-    private fun Blueprint.Json.toPlainText(encoded: Boolean): Blueprint.Json =
-        if (encoded) this.decode() else this
 }
