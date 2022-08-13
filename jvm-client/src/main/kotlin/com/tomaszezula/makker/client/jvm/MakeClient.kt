@@ -1,10 +1,32 @@
 package com.tomaszezula.makker.client.jvm
 
 import com.tomaszezula.makker.client.jvm.model.ModuleUpdate
+import com.tomaszezula.makker.common.DefaultMakeAdapter
+import com.tomaszezula.makker.common.MakeConfig
 import com.tomaszezula.makker.common.model.*
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import kotlinx.serialization.json.Json
 import java.nio.file.Path
 
 interface MakeClient {
+
+    companion object {
+        fun eu(token: String): MakeClient =
+            newInstance(MakeConfig.eu(), token)
+
+        fun us(token: String): MakeClient =
+            newInstance(MakeConfig.us(), token)
+
+        private fun newInstance(config: MakeConfig, token: String): MakeClient =
+            DefaultMakeClient(
+                DefaultMakeAdapter(
+                    config,
+                    HttpClient(CIO),
+                    Json { ignoreUnknownKeys = true }
+                ), AuthToken(token)
+            )
+    }
 
     suspend fun createScenario(
         teamId: Scenario.TeamId,
