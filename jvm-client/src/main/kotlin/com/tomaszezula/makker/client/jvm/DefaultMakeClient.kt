@@ -62,7 +62,7 @@ class DefaultMakeClient(private val makeAdapter: MakeAdapter, private val token:
     ): Result<UpdateResult> =
         makeAdapter.setModuleData(scenarioId, moduleId, key, value, token)
 
-    override suspend fun setModuleDataInBulk(
+    override suspend fun setModuleData(
         scenarioId: Scenario.Id,
         moduleUpdates: List<ModuleUpdate>
     ): Result<UpdateResult> =

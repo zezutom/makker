@@ -42,7 +42,7 @@ interface MakeClient {
         value: String
     ): Result<UpdateResult>
 
-    suspend fun setModuleDataInBulk(
+    suspend fun setModuleData(
         scenarioId: Scenario.Id,
         moduleUpdates: List<ModuleUpdate>
     ): Result<UpdateResult>

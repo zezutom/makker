@@ -68,7 +68,7 @@ class DefaultMakeAdapter(
         token: AuthToken
     ): Result<Scenario> =
         patch("${config.baseUrl}/scenarios/${scenarioId.value}?confirmed=true", token, buildJsonObject {
-            put(BlueprintKey, blueprint.value)
+            put(BlueprintKey, blueprint.toJson())
         }) { it.toScenario() }
 
     override suspend fun getBlueprint(scenarioId: Scenario.Id, token: AuthToken): Result<Blueprint> =

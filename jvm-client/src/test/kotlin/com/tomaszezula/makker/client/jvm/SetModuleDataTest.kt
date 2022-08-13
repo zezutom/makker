@@ -75,7 +75,7 @@ class SetModuleDataTest : StringSpec() {
                     }
                 } returns Result.success(UpdateResult.Success)
             }
-            makeClient.setModuleDataInBulk(scenario.id, moduleUpdates).map {
+            makeClient.setModuleData(scenario.id, moduleUpdates).map {
                 it shouldBe UpdateResult.Success
             }
 
@@ -100,7 +100,7 @@ class SetModuleDataTest : StringSpec() {
                     }
                 } returns Result.success(UpdateResult(it.value))
             }
-            makeClient.setModuleDataInBulk(scenario.id, moduleUpdateMap.keys.toList()).map {
+            makeClient.setModuleData(scenario.id, moduleUpdateMap.keys.toList()).map {
                 it shouldBe UpdateResult.Failure
             }
         }

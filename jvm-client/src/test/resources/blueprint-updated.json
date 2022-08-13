@@ -1,0 +1,98 @@
+{
+  "name": "Updated integration",
+  "flow": [
+    {
+      "id": 2,
+      "module": "json:ParseJSON",
+      "version": 1,
+      "parameters": {
+        "type": ""
+      },
+      "mapper": {
+        "qs": [],
+        "json": "bbb",
+        "headers": []
+      },
+      "metadata": {
+        "designer": {
+          "x": -46,
+          "y": 47
+        },
+        "restore": {
+          "parameters": {
+            "type": {
+              "label": "Choose a data structure"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "type",
+            "type": "udt",
+            "label": "Data structure"
+          }
+        ],
+        "expect": [
+          {
+            "name": "json",
+            "type": "text",
+            "label": "JSON string",
+            "required": true
+          }
+        ]
+      },
+      "onerror": []
+    },
+    {
+      "id": 3,
+      "module": "util:ComposeTransformer",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "qs": [],
+        "value": "ccc",
+        "headers": []
+      },
+      "metadata": {
+        "designer": {
+          "x": 376,
+          "y": 34,
+          "messages": [
+            {
+              "category": "last",
+              "severity": "warning",
+              "message": "A transformer should not be the last module in the route."
+            }
+          ]
+        },
+        "restore": {},
+        "expect": [
+          {
+            "name": "value",
+            "type": "text",
+            "label": "Text"
+          }
+        ]
+      },
+      "onerror": []
+    }
+  ],
+  "metadata": {
+    "instant": false,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false
+    },
+    "designer": {
+      "orphans": []
+    },
+    "zone": "eu1.make.com"
+  }
+}
