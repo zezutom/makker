@@ -1,19 +1,17 @@
-package com.tomaszezula.makker.client.jvm
+package com.tomaszezula.makker.client.jvm.java
 
-import com.tomaszezula.makker.client.jvm.model.ModuleUpdate
+import com.tomaszezula.makker.client.jvm.MakeClient
+import com.tomaszezula.makker.client.jvm.java.model.ModuleUpdate
+import com.tomaszezula.makker.common.asCompletableFuture
 import com.tomaszezula.makker.common.model.Blueprint
 import com.tomaszezula.makker.common.model.Scenario
 import com.tomaszezula.makker.common.model.Scheduling
 import com.tomaszezula.makker.common.model.UpdateResult
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.future.future
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 
-class DefaultJavaMakeClient(private val makeClient: MakeClient) : JavaMakeClient {
-
-    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+class DefaultMakeClient(private val makeClient: MakeClient) :
+    com.tomaszezula.makker.client.jvm.java.MakeClient {
 
     override fun createScenario(
         teamId: Long,
@@ -70,11 +68,10 @@ class DefaultJavaMakeClient(private val makeClient: MakeClient) : JavaMakeClient
         moduleUpdates: List<ModuleUpdate>
     ): CompletableFuture<UpdateResult> =
         asCompletableFuture {
-            makeClient.setModuleData(Scenario.Id(scenarioId), moduleUpdates)
-        }
-
-    private fun <T> asCompletableFuture(f: suspend () -> Result<T>): CompletableFuture<T> =
-        scope.future {
-            f().getOrThrow()
+            makeClient.setModuleData(Scenario.Id(scenarioId), moduleUpdates.map {
+                com.tomaszezula.makker.client.jvm.model.ModuleUpdate(
+                    Blueprint.Module.Id(it.moduleId), it.key, it.value
+                )
+            })
         }
 }

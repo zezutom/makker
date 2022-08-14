@@ -1,11 +1,19 @@
-package com.tomaszezula.makker.client.jvm
+package com.tomaszezula.makker.client.jvm.java
 
-import com.tomaszezula.makker.client.jvm.model.ModuleUpdate
+import com.tomaszezula.makker.client.jvm.java.model.ModuleUpdate
 import com.tomaszezula.makker.common.model.*
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 
-interface JavaMakeClient {
+interface MakeClient {
+
+    companion object {
+        fun eu(token: String): MakeClient =
+            com.tomaszezula.makker.client.jvm.MakeClient.eu(token).asJava()
+
+        fun us(token: String): MakeClient =
+            com.tomaszezula.makker.client.jvm.MakeClient.us(token).asJava()
+    }
 
     fun createScenario(
         teamId: Long,

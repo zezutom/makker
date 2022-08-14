@@ -1,7 +1,5 @@
 package com.tomaszezula.makker.client.jvm.java;
 
-import com.tomaszezula.makker.client.jvm.JavaMakeClient;
-import com.tomaszezula.makker.client.jvm.MakeClient;
 
 import java.io.IOException;
 import java.net.URI;
@@ -11,7 +9,7 @@ import java.nio.file.Path;
 import java.util.Objects;
 
 public class Config {
-    public static final JavaMakeClient makeClient = MakeClient.Companion.eu("REPLACE-WITH-YOUR-API-KEY").asJava();
+    public static final MakeClient makeClient = MakeClient.Companion.eu("4cdee210-caaf-407d-afb9-7cc1ef452ac9");
 
     public static final String blueprint = readResource("blueprint.json");
     public static final String updatedBlueprint = readResource("blueprint-updated.json");
@@ -23,6 +21,7 @@ public class Config {
             throw new RuntimeException(ex);
         }
     }
+
     private static String readResource(String name) {
         try {
             return Files.readString(Path.of(getResource(name)));

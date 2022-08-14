@@ -8,6 +8,8 @@ import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import kotlinx.serialization.json.Json
 import java.nio.file.Path
+import com.tomaszezula.makker.client.jvm.java.DefaultMakeClient as DefaultJavaMakeClient
+import com.tomaszezula.makker.client.jvm.java.MakeClient as JavaMakeClient
 
 interface MakeClient {
 
