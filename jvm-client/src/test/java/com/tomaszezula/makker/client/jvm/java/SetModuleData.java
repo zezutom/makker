@@ -15,8 +15,8 @@ public class SetModuleData {
 
     private static void singleModule() throws ExecutionException, InterruptedException {
         makeClient.setModuleData(
-                471310L,
-                9L,
+                471310,
+                9,
                 "value",
                 "{{5.greeting}}"
         ).whenComplete((blueprint, ex) -> {
@@ -30,11 +30,11 @@ public class SetModuleData {
 
     private static void multipleModules() throws ExecutionException, InterruptedException {
         makeClient.setModuleData(
-                471310L,
+                471310,
                 Arrays.asList(
-                        new ModuleUpdate(9L, "value", "{{5.greeting}}"),
-                        new ModuleUpdate(12L, "value", "{{5.greeting}}"),
-                        new ModuleUpdate(13L, "json", "{{5.greeting}}")
+                        new ModuleUpdate(9, "value", "{{5.greeting}}"),
+                        new ModuleUpdate(12, "value", "{{5.greeting}}"),
+                        new ModuleUpdate(13, "json", "{{5.greeting}}")
                 )
         ).whenComplete((blueprint, ex) -> {
             if (ex != null) {

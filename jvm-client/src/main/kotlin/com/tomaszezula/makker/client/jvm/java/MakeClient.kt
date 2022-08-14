@@ -16,43 +16,43 @@ interface MakeClient {
     }
 
     fun createScenario(
-        teamId: Long,
-        folderId: Long,
+        teamId: Int,
+        folderId: Int,
         blueprint: Blueprint.Json,
         scheduling: Scheduling = IndefiniteScheduling(),
     ): CompletableFuture<Scenario>
 
     fun createScenario(
-        teamId: Long,
-        folderId: Long,
+        teamId: Int,
+        folderId: Int,
         filePath: Path,
         scheduling: Scheduling = IndefiniteScheduling(),
     ): CompletableFuture<Scenario>
 
 
     fun updateScenario(
-        scenarioId: Long,
+        scenarioId: Int,
         blueprint: Blueprint.Json
     ): CompletableFuture<Scenario>
 
     fun updateScenario(
-        scenarioId: Long,
+        scenarioId: Int,
         filePath: Path
     ): CompletableFuture<Scenario>
 
-    fun getBlueprint(scenarioId: Long): CompletableFuture<Blueprint>
+    fun getBlueprint(scenarioId: Int): CompletableFuture<Blueprint>
 
-    fun getBlueprints(scenarioIds: List<Long>): CompletableFuture<List<Blueprint>>
+    fun getBlueprints(scenarioIds: List<Int>): CompletableFuture<List<Blueprint>>
 
     fun setModuleData(
-        scenarioId: Long,
-        moduleId: Long,
+        scenarioId: Int,
+        moduleId: Int,
         key: String,
         value: String
     ): CompletableFuture<UpdateResult>
 
     fun setModuleData(
-        scenarioId: Long,
+        scenarioId: Int,
         moduleUpdates: List<ModuleUpdate>
     ): CompletableFuture<UpdateResult>
 }

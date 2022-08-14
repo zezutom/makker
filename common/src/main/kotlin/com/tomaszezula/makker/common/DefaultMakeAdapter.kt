@@ -109,7 +109,7 @@ class DefaultMakeAdapter(
                 objectMapper.readValue(responseJson.toString(), com.tomaszezula.makker.make.api.Blueprint::class.java)
 
             // Modify the blueprint. This is a hack!
-            blueprint.response.blueprint.flow.find { it.id == moduleId.value.toInt() }?.let { module ->
+            blueprint.response.blueprint.flow.find { it.id == moduleId.value }?.let { module ->
                 if (module.mapper == null) {
                     module.mapper = Mapper()
                 }
@@ -121,7 +121,7 @@ class DefaultMakeAdapter(
                 module.mapper.additionalProperties.putAll(updatedProperties.map { (it.key.toString() to it.value) })
             } ?: run {
                 blueprint.response.blueprint.flow.forEach { flow ->
-                    replaceModuleData(flow.additionalProperties, moduleId.value.toInt(), fieldName, data)
+                    replaceModuleData(flow.additionalProperties, moduleId.value, fieldName, data)
                 }
             }
             blueprint
@@ -193,7 +193,7 @@ class DefaultMakeAdapter(
         }
 
     private fun JsonElement.toModule(): Blueprint.Module? =
-        this.jsonObject[IdKey]?.jsonPrimitive?.longOrNull?.let { moduleId ->
+        this.jsonObject[IdKey]?.jsonPrimitive?.intOrNull?.let { moduleId ->
             this.jsonObject[ModuleKey]?.jsonPrimitive?.content?.let { name ->
                 Blueprint.Module(Blueprint.Module.Id(moduleId), name)
             }
@@ -201,13 +201,13 @@ class DefaultMakeAdapter(
 
     private fun JsonObject.toScenario(): Scenario? =
         jsonObject(this, ScenarioKey)?.let {
-            it[IdKey]?.jsonPrimitive?.longOrNull?.let { scenarioId ->
-                it[TeamIdKey]?.jsonPrimitive?.longOrNull?.let { teamId ->
+            it[IdKey]?.jsonPrimitive?.intOrNull?.let { scenarioId ->
+                it[TeamIdKey]?.jsonPrimitive?.intOrNull?.let { teamId ->
                     it[NameKey]?.jsonPrimitive?.content?.let { name ->
                         Scenario(
                             Scenario.Id(scenarioId),
                             Scenario.TeamId(teamId),
-                            it[FolderIdKey]?.jsonPrimitive?.longOrNull?.let { folderId -> Scenario.FolderId(folderId) },
+                            it[FolderIdKey]?.jsonPrimitive?.intOrNull?.let { folderId -> Scenario.FolderId(folderId) },
                             name
                         )
                     }

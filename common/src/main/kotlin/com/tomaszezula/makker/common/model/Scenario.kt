@@ -6,13 +6,13 @@ import kotlinx.serialization.Serializable
 data class Scenario(val id: Id, val teamId: TeamId, val folderId: FolderId?, val name: String) {
     @Serializable
     @JvmInline
-    value class Id(val value: Long)
+    value class Id(val value: Int)
 
     @Serializable
     @JvmInline
-    value class TeamId(val value: Long)
+    value class TeamId(val value: Int)
 
     @Serializable
     @JvmInline
-    value class FolderId(val value: Long)
+    value class FolderId(val value: Int)
 }

@@ -20,8 +20,8 @@ public class CreateScenario {
 
     private static void fromBlueprint() throws ExecutionException, InterruptedException {
         makeClient.createScenario(
-                55228L,
-                22143L,
+                55228,
+                22143,
                 new Blueprint.Json(
                         blueprint,
                         false
@@ -38,8 +38,8 @@ public class CreateScenario {
 
     private static void fromEncodedBlueprint() throws ExecutionException, InterruptedException {
         makeClient.createScenario(
-                55228L,
-                22143L,
+                55228,
+                22143,
                 new Blueprint.Json(
                         Base64.getEncoder().encodeToString(blueprint.getBytes()),
                         true
@@ -56,8 +56,8 @@ public class CreateScenario {
 
     private static void fromFile() throws ExecutionException, InterruptedException {
         makeClient.createScenario(
-                55228L,
-                22143L,
+                55228,
+                22143,
                 Path.of(getResource("blueprint.json")),
                 new IndefiniteScheduling()
         ).whenComplete((scenario, ex) -> {

@@ -8,7 +8,7 @@ data class Blueprint(val name: String, val modules: List<Module>, val json: Json
     data class Module(val id: Id, val name: String) {
         @Serializable
         @JvmInline
-        value class Id(val value: Long)
+        value class Id(val value: Int)
     }
     @Serializable
     data class Json(val value: String, val encoded: Boolean = false)

@@ -14,8 +14,8 @@ class DefaultMakeClient(private val makeClient: MakeClient) :
     com.tomaszezula.makker.client.jvm.java.MakeClient {
 
     override fun createScenario(
-        teamId: Long,
-        folderId: Long,
+        teamId: Int,
+        folderId: Int,
         blueprint: Blueprint.Json,
         scheduling: Scheduling
     ): CompletableFuture<Scenario> =
@@ -24,8 +24,8 @@ class DefaultMakeClient(private val makeClient: MakeClient) :
         }
 
     override fun createScenario(
-        teamId: Long,
-        folderId: Long,
+        teamId: Int,
+        folderId: Int,
         filePath: Path,
         scheduling: Scheduling
     ): CompletableFuture<Scenario> =
@@ -33,29 +33,29 @@ class DefaultMakeClient(private val makeClient: MakeClient) :
             makeClient.createScenario(Scenario.TeamId(teamId), Scenario.FolderId(folderId), filePath, scheduling)
         }
 
-    override fun updateScenario(scenarioId: Long, blueprint: Blueprint.Json): CompletableFuture<Scenario> =
+    override fun updateScenario(scenarioId: Int, blueprint: Blueprint.Json): CompletableFuture<Scenario> =
         asCompletableFuture {
             makeClient.updateScenario(Scenario.Id(scenarioId), blueprint)
         }
 
-    override fun updateScenario(scenarioId: Long, filePath: Path): CompletableFuture<Scenario> =
+    override fun updateScenario(scenarioId: Int, filePath: Path): CompletableFuture<Scenario> =
         asCompletableFuture {
             makeClient.updateScenario(Scenario.Id(scenarioId), filePath)
         }
 
-    override fun getBlueprint(scenarioId: Long): CompletableFuture<Blueprint> =
+    override fun getBlueprint(scenarioId: Int): CompletableFuture<Blueprint> =
         asCompletableFuture {
             makeClient.getBlueprint(Scenario.Id(scenarioId))
         }
 
-    override fun getBlueprints(scenarioIds: List<Long>): CompletableFuture<List<Blueprint>> =
+    override fun getBlueprints(scenarioIds: List<Int>): CompletableFuture<List<Blueprint>> =
         asCompletableFuture {
             makeClient.getBlueprints(scenarioIds.map { Scenario.Id(it) })
         }
 
     override fun setModuleData(
-        scenarioId: Long,
-        moduleId: Long,
+        scenarioId: Int,
+        moduleId: Int,
         key: String,
         value: String
     ): CompletableFuture<UpdateResult> =
@@ -64,7 +64,7 @@ class DefaultMakeClient(private val makeClient: MakeClient) :
         }
 
     override fun setModuleData(
-        scenarioId: Long,
+        scenarioId: Int,
         moduleUpdates: List<ModuleUpdate>
     ): CompletableFuture<UpdateResult> =
         asCompletableFuture {

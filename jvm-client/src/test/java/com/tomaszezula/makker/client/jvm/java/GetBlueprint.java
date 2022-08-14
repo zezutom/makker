@@ -12,7 +12,7 @@ public class GetBlueprint {
     }
 
     private static void single() throws ExecutionException, InterruptedException {
-        makeClient.getBlueprint(471310L).whenComplete((blueprint, ex) -> {
+        makeClient.getBlueprint(471310).whenComplete((blueprint, ex) -> {
             if (ex != null) {
                 ex.printStackTrace();
             } else {
@@ -22,7 +22,7 @@ public class GetBlueprint {
     }
 
     private static void multiple() throws ExecutionException, InterruptedException {
-        makeClient.getBlueprints(Arrays.asList(473703L, 471310L)).whenComplete((blueprints, ex) -> {
+        makeClient.getBlueprints(Arrays.asList(473703, 471310)).whenComplete((blueprints, ex) -> {
             if (ex != null) {
                 ex.printStackTrace();
             } else {

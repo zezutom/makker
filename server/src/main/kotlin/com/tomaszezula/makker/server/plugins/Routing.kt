@@ -39,13 +39,13 @@ fun Application.configureRouting(
 }
 
 private suspend fun updateScenarioRequest(call: ApplicationCall) =
-    call.receive<UpdateScenarioRequest>().copy(scenarioId = call.getOrThrow(ScenarioId).toLong())
+    call.receive<UpdateScenarioRequest>().copy(scenarioId = call.getOrThrow(ScenarioId).toInt())
 
 private suspend fun setModuleDataRequest(call: ApplicationCall) =
-    call.receive<SetModuleDataRequest>().copy(scenarioId = call.getOrThrow(ScenarioId).toLong())
+    call.receive<SetModuleDataRequest>().copy(scenarioId = call.getOrThrow(ScenarioId).toInt())
 
 private fun getBlueprintRequest(call: ApplicationCall) =
-    GetBlueprintRequest(call.getOrThrow(ScenarioId).toLong())
+    GetBlueprintRequest(call.getOrThrow(ScenarioId).toInt())
 
 fun ApplicationCall.getOrThrow(param: String): String =
     this.parameters[param] ?: throw IllegalStateException("Parameter '$param' was expected, but it is missing.")
