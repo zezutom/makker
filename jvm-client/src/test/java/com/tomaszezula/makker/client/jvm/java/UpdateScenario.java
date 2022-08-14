@@ -1,7 +1,5 @@
 package com.tomaszezula.makker.client.jvm.java;
 
-import com.tomaszezula.makker.common.model.Blueprint;
-
 import java.nio.file.Path;
 import java.util.Base64;
 import java.util.concurrent.ExecutionException;
@@ -18,10 +16,7 @@ public class UpdateScenario {
     private static void fromBlueprint() throws ExecutionException, InterruptedException {
         makeClient.updateScenario(
                 473703,
-                new Blueprint.Json(
-                        updatedBlueprint,
-                        false
-                )
+                updatedBlueprint
         ).whenComplete((scenario, ex) -> {
             if (ex != null) {
                 ex.printStackTrace();
@@ -34,10 +29,8 @@ public class UpdateScenario {
     private static void fromEncodedBlueprint() throws ExecutionException, InterruptedException {
         makeClient.updateScenario(
                 473703,
-                new Blueprint.Json(
-                        Base64.getEncoder().encodeToString(updatedBlueprint.getBytes()),
-                        true
-                )
+                Base64.getEncoder().encodeToString(updatedBlueprint.getBytes()),
+                true
         ).whenComplete((scenario, ex) -> {
             if (ex != null) {
                 ex.printStackTrace();

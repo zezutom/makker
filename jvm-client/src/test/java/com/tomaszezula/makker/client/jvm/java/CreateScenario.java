@@ -1,15 +1,10 @@
 package com.tomaszezula.makker.client.jvm.java;
 
-import com.tomaszezula.makker.common.model.Blueprint;
-import com.tomaszezula.makker.common.model.IndefiniteScheduling;
-
 import java.nio.file.Path;
 import java.util.Base64;
 import java.util.concurrent.ExecutionException;
 
-import static com.tomaszezula.makker.client.jvm.java.Config.blueprint;
-import static com.tomaszezula.makker.client.jvm.java.Config.makeClient;
-import static com.tomaszezula.makker.client.jvm.java.Config.getResource;
+import static com.tomaszezula.makker.client.jvm.java.Config.*;
 
 public class CreateScenario {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
@@ -22,11 +17,7 @@ public class CreateScenario {
         makeClient.createScenario(
                 55228,
                 22143,
-                new Blueprint.Json(
-                        blueprint,
-                        false
-                ),
-                new IndefiniteScheduling()
+                blueprint
         ).whenComplete((scenario, ex) -> {
             if (ex != null) {
                 ex.printStackTrace();
@@ -40,11 +31,8 @@ public class CreateScenario {
         makeClient.createScenario(
                 55228,
                 22143,
-                new Blueprint.Json(
-                        Base64.getEncoder().encodeToString(blueprint.getBytes()),
-                        true
-                ),
-                new IndefiniteScheduling()
+                Base64.getEncoder().encodeToString(blueprint.getBytes()),
+                true
         ).whenComplete((scenario, ex) -> {
             if (ex != null) {
                 ex.printStackTrace();
@@ -58,8 +46,7 @@ public class CreateScenario {
         makeClient.createScenario(
                 55228,
                 22143,
-                Path.of(getResource("blueprint.json")),
-                new IndefiniteScheduling()
+                Path.of(getResource("blueprint.json"))
         ).whenComplete((scenario, ex) -> {
             if (ex != null) {
                 ex.printStackTrace();
