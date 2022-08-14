@@ -4,6 +4,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.openapi.generator")
     id("io.ktor.plugin")
+    jacoco
 }
 
 val ktorVersion: String by project
@@ -46,4 +47,12 @@ dependencies {
 
 tasks.named("build") {
     dependsOn("openApiGenerate")
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test) // tests are required to run before generating the report
 }

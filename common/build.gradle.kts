@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jsonschema2dataclass") version "4.2.0"
+    jacoco
 }
 
 jsonSchema2Pojo {
@@ -22,4 +23,12 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
     testImplementation(kotlin("test"))
     testImplementation(("io.ktor:ktor-client-mock:$ktorVersion"))
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test) // tests are required to run before generating the report
 }
