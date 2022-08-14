@@ -28,6 +28,8 @@ interface MakeClient {
             )
     }
 
+    fun asJava(): JavaMakeClient = DefaultJavaMakeClient(this)
+
     suspend fun createScenario(
         teamId: Scenario.TeamId,
         folderId: Scenario.FolderId,
@@ -69,3 +71,4 @@ interface MakeClient {
         moduleUpdates: List<ModuleUpdate>
     ): Result<UpdateResult>
 }
+
