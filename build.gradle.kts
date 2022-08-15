@@ -5,6 +5,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion apply false
     id("org.openapi.generator") version "6.0.1" apply false
     id("io.ktor.plugin") version "2.1.0" apply false
+    base
+    id("jacoco-report-aggregation")
 }
 
 group = "com.tomaszezula.makker"
@@ -17,4 +19,22 @@ allprojects {
             url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
         }
     }
+}
+
+dependencies {
+    jacocoAggregation(project(":common"))
+    jacocoAggregation(project(":jvm-client"))
+    jacocoAggregation(project(":server"))
+}
+
+reporting {
+    reports {
+        val testCodeCoverageReport by creating(JacocoCoverageReport::class) {
+            testType.set(TestSuiteType.UNIT_TEST)
+        }
+    }
+}
+
+tasks.check {
+    dependsOn(tasks.named<JacocoReport>("testCodeCoverageReport"))
 }
