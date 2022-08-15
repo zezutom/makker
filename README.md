@@ -1,6 +1,7 @@
 # Makker
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/zezutom/makker/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/zezutom/makker/tree/main)
+[![codecov](https://codecov.io/gh/zezutom/makker/branch/main/graph/badge.svg?token=8GT2U3IDWQ)](https://codecov.io/gh/zezutom/makker)
 
 Make (formerly Integromat) connector suite. Choose how do you want to manage your low-code and no-code scenarios from your code!
 
