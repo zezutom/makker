@@ -1,6 +1,6 @@
 # Makker
 
-Make (formerly Integromat) connector suite. Choos how do you want to manage your low-code and no-code scenarios from your code!
+Make (formerly Integromat) connector suite. Choose how do you want to manage your low-code and no-code scenarios from your code!
 
 Makker comprises different modules. Pick the one that suits your needs.
 
