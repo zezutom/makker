@@ -30,9 +30,10 @@ tasks.test {
 }
 
 tasks.jacocoTestReport {
-    dependsOn(tasks.test) // tests are required to run before generating the report
+    executionData(fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec"))
     reports {
         xml.required.set(true)
-        csv.required.set(true)
+        xml.outputLocation.set(File("$buildDir/reports/jacoco/report.xml"))
     }
+    dependsOn(tasks.test) // tests are required to run before generating the report
 }
