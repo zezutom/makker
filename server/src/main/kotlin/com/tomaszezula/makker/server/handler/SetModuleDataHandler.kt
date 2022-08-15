@@ -1,10 +1,7 @@
 package com.tomaszezula.makker.server.handler
 
 import com.tomaszezula.makker.common.MakeAdapter
-import com.tomaszezula.makker.common.model.AuthToken
-import com.tomaszezula.makker.common.model.Blueprint
-import com.tomaszezula.makker.common.model.Scenario
-import com.tomaszezula.makker.common.model.UpdateResult
+import com.tomaszezula.makker.common.model.*
 import com.tomaszezula.makker.common.toResult
 import com.tomaszezula.makker.server.model.Ok
 import com.tomaszezula.makker.server.model.Response
@@ -20,11 +17,13 @@ class SetModuleDataHandler(private val makeAdapter: MakeAdapter) :
             coroutineScope {
                 async {
                     makeAdapter.setModuleData(
-                        Scenario.Id(request.scenarioId!!),
-                        Blueprint.Module.Id(it.moduleId),
                         it.key,
                         it.value,
-                        token
+                        SetModuleDataContext(
+                            token,
+                            Scenario.Id(request.scenarioId!!),
+                            Blueprint.Module.Id(it.moduleId)
+                        )
                     )
                 }
             }

@@ -2,6 +2,7 @@ package com.tomaszezula.makker.client.jvm
 
 import com.tomaszezula.makker.common.MakeAdapter
 import com.tomaszezula.makker.common.model.Blueprint
+import com.tomaszezula.makker.common.model.UpdateScenarioContext
 import io.kotest.assertions.fail
 import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.StringSpec
@@ -25,7 +26,7 @@ class UpdateScenarioTest : StringSpec() {
         "Update scenario should return the updated scenario" {
             every {
                 runBlocking {
-                    makeAdapter.updateScenario(scenario.id, blueprint.json, token)
+                    makeAdapter.updateScenario(blueprint.json, UpdateScenarioContext(token, scenario.id))
                 }
             } returns Result.success(updatedScenario)
 
@@ -35,7 +36,7 @@ class UpdateScenarioTest : StringSpec() {
 
             verify(exactly = 1) {
                 runBlocking {
-                    makeAdapter.updateScenario(scenario.id, blueprint.json, token)
+                    makeAdapter.updateScenario(blueprint.json, UpdateScenarioContext(token, scenario.id))
                 }
             }
         }
@@ -44,7 +45,7 @@ class UpdateScenarioTest : StringSpec() {
             val throwable = IllegalStateException("Something went wrong!")
             every {
                 runBlocking {
-                    makeAdapter.updateScenario(scenario.id, blueprint.json, token)
+                    makeAdapter.updateScenario(blueprint.json, UpdateScenarioContext(token, scenario.id))
                 }
             } returns Result.failure(throwable)
             makeClient.updateScenario(scenario.id, blueprint.json)
@@ -63,7 +64,7 @@ class UpdateScenarioTest : StringSpec() {
             )
             every {
                 runBlocking {
-                    makeAdapter.updateScenario(scenario.id, encodedJson, token)
+                    makeAdapter.updateScenario(encodedJson, UpdateScenarioContext(token, scenario.id))
                 }
             } returns Result.success(updatedScenario)
 
@@ -75,7 +76,7 @@ class UpdateScenarioTest : StringSpec() {
         "Update scenario should read the blueprint from a file" {
             every {
                 runBlocking {
-                    makeAdapter.updateScenario(scenario.id, blueprint.json, token)
+                    makeAdapter.updateScenario(blueprint.json, UpdateScenarioContext(token, scenario.id))
                 }
             } returns Result.success(updatedScenario)
 

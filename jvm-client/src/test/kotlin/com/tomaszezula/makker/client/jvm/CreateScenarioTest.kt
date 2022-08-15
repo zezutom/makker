@@ -2,6 +2,7 @@ package com.tomaszezula.makker.client.jvm
 
 import com.tomaszezula.makker.common.MakeAdapter
 import com.tomaszezula.makker.common.model.Blueprint
+import com.tomaszezula.makker.common.model.CreateScenarioContext
 import io.kotest.assertions.fail
 import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.StringSpec
@@ -25,11 +26,13 @@ class CreateScenarioTest : StringSpec() {
             every {
                 runBlocking {
                     makeAdapter.createScenario(
-                        teamId,
-                        folderId,
                         blueprint.json,
                         scheduling,
-                        token
+                        CreateScenarioContext(
+                            token,
+                            teamId,
+                            folderId
+                        )
                     )
                 }
             } returns Result.success(scenario)
@@ -41,11 +44,13 @@ class CreateScenarioTest : StringSpec() {
             verify(exactly = 1) {
                 runBlocking {
                     makeAdapter.createScenario(
-                        teamId,
-                        folderId,
                         blueprint.json,
                         scheduling,
-                        token
+                        CreateScenarioContext(
+                            token,
+                            teamId,
+                            folderId
+                        )
                     )
                 }
             }
@@ -56,11 +61,13 @@ class CreateScenarioTest : StringSpec() {
             every {
                 runBlocking {
                     makeAdapter.createScenario(
-                        teamId,
-                        folderId,
                         blueprint.json,
                         scheduling,
-                        token
+                        CreateScenarioContext(
+                            token,
+                            teamId,
+                            folderId
+                        )
                     )
                 }
             } returns Result.failure(throwable)
@@ -82,11 +89,13 @@ class CreateScenarioTest : StringSpec() {
             every {
                 runBlocking {
                     makeAdapter.createScenario(
-                        teamId,
-                        folderId,
                         encodedJson,
                         scheduling,
-                        token
+                        CreateScenarioContext(
+                            token,
+                            teamId,
+                            folderId
+                        )
                     )
                 }
             } returns Result.success(scenario)
@@ -100,11 +109,13 @@ class CreateScenarioTest : StringSpec() {
             every {
                 runBlocking {
                     makeAdapter.createScenario(
-                        teamId,
-                        folderId,
                         blueprint.json,
                         scheduling,
-                        token
+                        CreateScenarioContext(
+                            token,
+                            teamId,
+                            folderId
+                        )
                     )
                 }
             } returns Result.success(scenario)

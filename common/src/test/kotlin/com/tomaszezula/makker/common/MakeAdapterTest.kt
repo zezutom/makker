@@ -1,8 +1,7 @@
 package com.tomaszezula.makker.common
 
-import com.tomaszezula.makker.common.model.AuthToken
+import com.tomaszezula.makker.common.model.*
 import com.tomaszezula.makker.common.model.Blueprint
-import com.tomaszezula.makker.common.model.IndefiniteScheduling
 import com.tomaszezula.makker.common.model.Scenario
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
@@ -29,12 +28,12 @@ class MakeAdapterTest {
         const val TeamIdKey = "teamId"
         val token = AuthToken("test-token")
         val scenarioId = Scenario.Id(1)
-        val moduleId = Blueprint.Module.Id(1)
         val teamId = Scenario.TeamId(1)
         val folderId = Scenario.FolderId(1)
-        val blueprintJson = Blueprint.Json("{}")
+        val blueprint = Blueprint.Json("{}")
         val scheduling = IndefiniteScheduling()
     }
+
     private val config = MakeConfig(Url("https://test-server.com"))
 
     @Test
@@ -46,7 +45,7 @@ class MakeAdapterTest {
                     "${config.baseUrl}/scenarios?confirmed=true",
                     HttpMethod.Post,
                     buildJsonObject {
-                        put(BlueprintKey, blueprintJson.value.lineSequence().map { it.trim() }.joinToString(Separator))
+                        put(BlueprintKey, blueprint.value.lineSequence().map { it.trim() }.joinToString(Separator))
                         put(SchedulingKey, scheduling.toJson())
                         put(TeamIdKey, teamId.value)
                         put(FolderIdKey, folderId.value)
@@ -60,7 +59,11 @@ class MakeAdapterTest {
                 )
             }
             assertResult(
-                makeAdapter(engine).createScenario(teamId, folderId, blueprintJson, scheduling, token),
+                makeAdapter(engine).createScenario(
+                    blueprint,
+                    scheduling,
+                    CreateScenarioContext(token, teamId, folderId)
+                ),
                 com.tomaszezula.makker.common.Scenario.expected
             )
         }
@@ -75,7 +78,7 @@ class MakeAdapterTest {
                     "${config.baseUrl}/scenarios/${scenarioId.value}?confirmed=true",
                     HttpMethod.Patch,
                     buildJsonObject {
-                        put(BlueprintKey, blueprintJson.value.lineSequence().map { it.trim() }.joinToString(Separator))
+                        put(BlueprintKey, blueprint.value.lineSequence().map { it.trim() }.joinToString(Separator))
                     })
                 this.respond(
                     content = ByteReadChannel(com.tomaszezula.makker.common.Scenario.response),
@@ -84,7 +87,7 @@ class MakeAdapterTest {
                 )
             }
             assertResult(
-                makeAdapter(engine).updateScenario(scenarioId, blueprintJson, token),
+                makeAdapter(engine).updateScenario(blueprint, UpdateScenarioContext(token, scenarioId)),
                 com.tomaszezula.makker.common.Scenario.expected
             )
         }
