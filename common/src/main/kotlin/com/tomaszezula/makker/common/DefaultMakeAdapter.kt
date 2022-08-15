@@ -86,28 +86,7 @@ class DefaultMakeAdapter(
         value: String,
         context: SetModuleDataContext
     ): Result<UpdateResult> {
-        val updatedBlueprint = get("${config.baseUrl}/scenarios/${context.scenarioId.value}/blueprint", context.authToken) { responseJson ->
-            val blueprint =
-                objectMapper.readValue(responseJson.toString(), com.tomaszezula.makker.make.api.Blueprint::class.java)
-
-            // Modify the blueprint. This is a hack!
-            blueprint.response.blueprint.flow.find { it.id == context.moduleId.value }?.let { module ->
-                if (module.mapper == null) {
-                    module.mapper = Mapper()
-                }
-                val node: ObjectNode = objectMapper.valueToTree(module.mapper.additionalProperties.orEmpty())
-                val jsonData: JsonNode = objectMapper.valueToTree(value)
-                val updatedNode: ObjectNode = node.set(key, jsonData)
-                val updatedProperties = objectMapper.readValue(updatedNode.toString(), Map::class.java)
-                module.mapper.additionalProperties.clear()
-                module.mapper.additionalProperties.putAll(updatedProperties.map { (it.key.toString() to it.value) })
-            } ?: run {
-                blueprint.response.blueprint.flow.forEach { flow ->
-                    replaceModuleData(flow.additionalProperties, context.moduleId.value, key, value)
-                }
-            }
-            blueprint
-        }.getOrThrow()
+        val updatedBlueprint = updateBlueprint(context, value, key)
 
         return patch("${config.baseUrl}/scenarios/${context.scenarioId.value}?confirmed=true", context.authToken, buildJsonObject {
             put(BlueprintKey, objectMapper.writeValueAsString(updatedBlueprint.response.blueprint))
@@ -115,6 +94,33 @@ class DefaultMakeAdapter(
             UpdateResult.Success
         }
     }
+
+    private suspend fun updateBlueprint(
+        context: SetModuleDataContext,
+        value: String,
+        key: String
+    ) = get("${config.baseUrl}/scenarios/${context.scenarioId.value}/blueprint", context.authToken) { responseJson ->
+        val blueprint =
+            objectMapper.readValue(responseJson.toString(), com.tomaszezula.makker.make.api.Blueprint::class.java)
+
+        // Modify the blueprint. This is a hack!
+        blueprint.response.blueprint.flow.find { it.id == context.moduleId.value }?.let { module ->
+            if (module.mapper == null) {
+                module.mapper = Mapper()
+            }
+            val node: ObjectNode = objectMapper.valueToTree(module.mapper.additionalProperties.orEmpty())
+            val jsonData: JsonNode = objectMapper.valueToTree(value)
+            val updatedNode: ObjectNode = node.set(key, jsonData)
+            val updatedProperties = objectMapper.readValue(updatedNode.toString(), Map::class.java)
+            module.mapper.additionalProperties.clear()
+            module.mapper.additionalProperties.putAll(updatedProperties.map { (it.key.toString() to it.value) })
+        } ?: run {
+            blueprint.response.blueprint.flow.forEach { flow ->
+                replaceModuleData(flow.additionalProperties, context.moduleId.value, key, value)
+            }
+        }
+        blueprint
+    }.getOrThrow()
 
     private fun extractModules(
         jsonObject: JsonObject,
