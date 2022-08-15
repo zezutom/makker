@@ -30,18 +30,16 @@ interface MakeClient {
         blueprint: String,
         scheduling: Scheduling
     ): CompletableFuture<Scenario>
-    fun createScenario(
+    fun createScenarioEncoded(
         teamId: Int,
         folderId: Int,
-        blueprint: String,
-        encoded: Boolean
+        blueprint: String
     ): CompletableFuture<Scenario>
 
-    fun createScenario(
+    fun createScenarioEncoded(
         teamId: Int,
         folderId: Int,
         blueprint: String,
-        encoded: Boolean,
         scheduling: Scheduling
     ): CompletableFuture<Scenario>
 
@@ -63,10 +61,9 @@ interface MakeClient {
         blueprint: String
     ): CompletableFuture<Scenario>
 
-    fun updateScenario(
+    fun updateScenarioEncoded(
         scenarioId: Int,
-        blueprint: String,
-        encoded: Boolean
+        blueprint: String
     ): CompletableFuture<Scenario>
 
     fun updateScenario(

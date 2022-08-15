@@ -28,11 +28,10 @@ public class CreateScenario {
     }
 
     private static void fromEncodedBlueprint() throws ExecutionException, InterruptedException {
-        makeClient.createScenario(
+        makeClient.createScenarioEncoded(
                 55228,
                 22143,
-                Base64.getEncoder().encodeToString(blueprint.getBytes()),
-                true
+                Base64.getEncoder().encodeToString(blueprint.getBytes())
         ).whenComplete((scenario, ex) -> {
             if (ex != null) {
                 ex.printStackTrace();
