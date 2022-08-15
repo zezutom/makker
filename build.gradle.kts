@@ -27,8 +27,6 @@ dependencies {
     jacocoAggregation(project(":server"))
 }
 
-
-
 reporting {
     reports {
         val testCodeCoverageReport by creating(JacocoCoverageReport::class) {

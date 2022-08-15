@@ -49,14 +49,18 @@ tasks.named("build") {
     dependsOn("openApiGenerate")
 }
 
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+}
+
 tasks.test {
     finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
 }
 
 tasks.jacocoTestReport {
-    dependsOn(tasks.test) // tests are required to run before generating the report
+    executionData(fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec"))
     reports {
         xml.required.set(true)
-        csv.required.set(true)
     }
+    dependsOn(tasks.test) // tests are required to run before generating the report
 }
