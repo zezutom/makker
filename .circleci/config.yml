@@ -47,4 +47,5 @@ jobs:
 
       # run tests!
       - run: gradle test
-      - codecov/upload -file "./build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml"
+      - codecov/upload:
+        file: "./build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml"
