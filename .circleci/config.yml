@@ -29,7 +29,6 @@ jobs:
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
       - checkout
-      - codecov/upload
 
       # Download and cache dependencies
       - restore_cache:
@@ -47,3 +46,8 @@ jobs:
 
       # run tests!
       - run: gradle test
+workflows:
+  upload-to-codecov:
+    jobs:
+      - build
+      - codecov/upload
