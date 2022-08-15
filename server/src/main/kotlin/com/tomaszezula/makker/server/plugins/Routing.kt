@@ -11,10 +11,7 @@ import org.slf4j.LoggerFactory
 const val ScenarioId = "scenarioId"
 
 fun Application.configureRouting(
-    createScenarioHandler: CreateScenarioHandler,
-    updateScenarioHandler: UpdateScenarioHandler,
-    getBlueprintHandler: GetBlueprintHandler,
-    setModuleDataHandler: SetModuleDataHandler,
+    handlers: Handlers,
     context: RequestContext
 ) {
     routing {
@@ -23,16 +20,16 @@ fun Application.configureRouting(
         }
         route("/v1") {
             post("/scenarios") {
-                createScenarioHandler.handle(context).invoke(call)
+                handlers.createScenarioHandler.handle(context).invoke(call)
             }
             patch("/scenarios/{scenarioId}") {
-                updateScenarioHandler.handle(context) { updateScenarioRequest(it) }.invoke(call)
+                handlers.updateScenarioHandler.handle(context) { updateScenarioRequest(it) }.invoke(call)
             }
             get("/scenarios/{scenarioId}/blueprint") {
-                getBlueprintHandler.handle(context) { getBlueprintRequest(it) }.invoke(call)
+                handlers.getBlueprintHandler.handle(context) { getBlueprintRequest(it) }.invoke(call)
             }
             put("/scenarios/{scenarioId}/data") {
-                setModuleDataHandler.handle(context) { setModuleDataRequest(it) }.invoke(call)
+                handlers.setModuleDataHandler.handle(context) { setModuleDataRequest(it) }.invoke(call)
             }
         }
     }
