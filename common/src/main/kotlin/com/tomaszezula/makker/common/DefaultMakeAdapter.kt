@@ -64,9 +64,12 @@ class DefaultMakeAdapter(
         blueprint: Blueprint.Json,
         context: UpdateScenarioContext
     ): Result<Scenario> =
-        patch("${config.baseUrl}/scenarios/${context.scenarioId.value}?confirmed=true", context.authToken, buildJsonObject {
-            put(BlueprintKey, blueprint.toJson())
-        }) { it.toScenario() }
+        patch(
+            "${config.baseUrl}/scenarios/${context.scenarioId.value}?confirmed=true",
+            context.authToken,
+            buildJsonObject {
+                put(BlueprintKey, blueprint.toJson())
+            }) { it.toScenario() }
 
     override suspend fun getBlueprint(scenarioId: Scenario.Id, token: AuthToken): Result<Blueprint> =
         get("${config.baseUrl}/scenarios/${scenarioId.value}/blueprint", token) { responseJson ->
@@ -88,9 +91,12 @@ class DefaultMakeAdapter(
     ): Result<UpdateResult> {
         val updatedBlueprint = updateBlueprint(context, value, key)
 
-        return patch("${config.baseUrl}/scenarios/${context.scenarioId.value}?confirmed=true", context.authToken, buildJsonObject {
-            put(BlueprintKey, objectMapper.writeValueAsString(updatedBlueprint.response.blueprint))
-        }) {
+        return patch(
+            "${config.baseUrl}/scenarios/${context.scenarioId.value}?confirmed=true",
+            context.authToken,
+            buildJsonObject {
+                put(BlueprintKey, objectMapper.writeValueAsString(updatedBlueprint.response.blueprint))
+            }) {
             UpdateResult.Success
         }
     }
