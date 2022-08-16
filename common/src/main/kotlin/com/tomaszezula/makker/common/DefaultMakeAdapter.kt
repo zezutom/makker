@@ -47,29 +47,29 @@ class DefaultMakeAdapter(
         .registerModule(KotlinModule.Builder().build())
 
     override suspend fun createScenario(
-        teamId: Scenario.TeamId,
-        folderId: Scenario.FolderId,
-        blueprintJson: Blueprint.Json,
+        blueprint: Blueprint.Json,
         scheduling: Scheduling,
-        token: AuthToken
+        context: CreateScenarioContext
     ): Result<Scenario> =
         scheduling.validate().map { schedule ->
-            post(createScenarioUrl, token, buildJsonObject {
-                put(BlueprintKey, blueprintJson.toJson())
+            post(createScenarioUrl, context.authToken, buildJsonObject {
+                put(BlueprintKey, blueprint.toJson())
                 put(SchedulingKey, schedule.toJson())
-                put(TeamIdKey, teamId.value)
-                put(FolderIdKey, folderId.value)
+                put(TeamIdKey, context.teamId.value)
+                put(FolderIdKey, context.folderId.value)
             }) { it.toScenario() }
         }.getOrThrow()
 
     override suspend fun updateScenario(
-        scenarioId: Scenario.Id,
         blueprint: Blueprint.Json,
-        token: AuthToken
+        context: UpdateScenarioContext
     ): Result<Scenario> =
-        patch("${config.baseUrl}/scenarios/${scenarioId.value}?confirmed=true", token, buildJsonObject {
-            put(BlueprintKey, blueprint.toJson())
-        }) { it.toScenario() }
+        patch(
+            "${config.baseUrl}/scenarios/${context.scenarioId.value}?confirmed=true",
+            context.authToken,
+            buildJsonObject {
+                put(BlueprintKey, blueprint.toJson())
+            }) { it.toScenario() }
 
     override suspend fun getBlueprint(scenarioId: Scenario.Id, token: AuthToken): Result<Blueprint> =
         get("${config.baseUrl}/scenarios/${scenarioId.value}/blueprint", token) { responseJson ->
@@ -84,6 +84,50 @@ class DefaultMakeAdapter(
             }
         }
 
+    override suspend fun setModuleData(
+        key: String,
+        value: String,
+        context: SetModuleDataContext
+    ): Result<UpdateResult> {
+        val updatedBlueprint = updateBlueprint(context, value, key)
+
+        return patch(
+            "${config.baseUrl}/scenarios/${context.scenarioId.value}?confirmed=true",
+            context.authToken,
+            buildJsonObject {
+                put(BlueprintKey, objectMapper.writeValueAsString(updatedBlueprint.response.blueprint))
+            }) {
+            UpdateResult.Success
+        }
+    }
+
+    private suspend fun updateBlueprint(
+        context: SetModuleDataContext,
+        value: String,
+        key: String
+    ) = get("${config.baseUrl}/scenarios/${context.scenarioId.value}/blueprint", context.authToken) { responseJson ->
+        val blueprint =
+            objectMapper.readValue(responseJson.toString(), com.tomaszezula.makker.make.api.Blueprint::class.java)
+
+        // Modify the blueprint. This is a hack!
+        blueprint.response.blueprint.flow.find { it.id == context.moduleId.value }?.let { module ->
+            if (module.mapper == null) {
+                module.mapper = Mapper()
+            }
+            val node: ObjectNode = objectMapper.valueToTree(module.mapper.additionalProperties.orEmpty())
+            val jsonData: JsonNode = objectMapper.valueToTree(value)
+            val updatedNode: ObjectNode = node.set(key, jsonData)
+            val updatedProperties = objectMapper.readValue(updatedNode.toString(), Map::class.java)
+            module.mapper.additionalProperties.clear()
+            module.mapper.additionalProperties.putAll(updatedProperties.map { (it.key.toString() to it.value) })
+        } ?: run {
+            blueprint.response.blueprint.flow.forEach { flow ->
+                replaceModuleData(flow.additionalProperties, context.moduleId.value, key, value)
+            }
+        }
+        blueprint
+    }.getOrThrow()
+
     private fun extractModules(
         jsonObject: JsonObject,
         modules: List<Blueprint.Module> = emptyList()
@@ -95,43 +139,6 @@ class DefaultMakeAdapter(
                 flow.toModule()?.let { module -> extractModules(flow.jsonObject, modules.plus(module)) } ?: modules
             }
         } ?: modules
-    }
-
-    override suspend fun setModuleData(
-        scenarioId: Scenario.Id,
-        moduleId: Blueprint.Module.Id,
-        fieldName: String,
-        data: String,
-        token: AuthToken
-    ): Result<UpdateResult> {
-        val updatedBlueprint = get("${config.baseUrl}/scenarios/${scenarioId.value}/blueprint", token) { responseJson ->
-            val blueprint =
-                objectMapper.readValue(responseJson.toString(), com.tomaszezula.makker.make.api.Blueprint::class.java)
-
-            // Modify the blueprint. This is a hack!
-            blueprint.response.blueprint.flow.find { it.id == moduleId.value }?.let { module ->
-                if (module.mapper == null) {
-                    module.mapper = Mapper()
-                }
-                val node: ObjectNode = objectMapper.valueToTree(module.mapper.additionalProperties.orEmpty())
-                val jsonData: JsonNode = objectMapper.valueToTree(data)
-                val updatedNode: ObjectNode = node.set(fieldName, jsonData)
-                val updatedProperties = objectMapper.readValue(updatedNode.toString(), Map::class.java)
-                module.mapper.additionalProperties.clear()
-                module.mapper.additionalProperties.putAll(updatedProperties.map { (it.key.toString() to it.value) })
-            } ?: run {
-                blueprint.response.blueprint.flow.forEach { flow ->
-                    replaceModuleData(flow.additionalProperties, moduleId.value, fieldName, data)
-                }
-            }
-            blueprint
-        }.getOrThrow()
-
-        return patch("${config.baseUrl}/scenarios/${scenarioId.value}?confirmed=true", token, buildJsonObject {
-            put(BlueprintKey, objectMapper.writeValueAsString(updatedBlueprint.response.blueprint))
-        }) {
-            UpdateResult.Success
-        }
     }
 
     @Suppress("UNCHECKED_CAST")

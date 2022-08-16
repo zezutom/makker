@@ -8,7 +8,7 @@ import kotlinx.coroutines.*
 import java.nio.file.Files
 import java.nio.file.Path
 
-class DefaultMakeClient(private val makeAdapter: MakeAdapter, private val token: AuthToken) : MakeClient {
+class DefaultMakeClient(private val makeAdapter: MakeAdapter, private val authToken: AuthToken) : MakeClient {
 
     companion object {
         const val Separator = ""
@@ -20,7 +20,7 @@ class DefaultMakeClient(private val makeAdapter: MakeAdapter, private val token:
         blueprint: Blueprint.Json,
         scheduling: Scheduling
     ): Result<Scenario> =
-        makeAdapter.createScenario(teamId, folderId, blueprint, scheduling, token)
+        makeAdapter.createScenario(blueprint, scheduling, CreateScenarioContext(authToken, teamId, folderId))
 
     override suspend fun createScenario(
         teamId: Scenario.TeamId,
@@ -28,28 +28,28 @@ class DefaultMakeClient(private val makeAdapter: MakeAdapter, private val token:
         filePath: Path,
         scheduling: Scheduling
     ): Result<Scenario> =
-        makeAdapter.createScenario(teamId, folderId, fromFile(filePath), scheduling, token)
+        makeAdapter.createScenario(fromFile(filePath), scheduling, CreateScenarioContext(authToken, teamId, folderId))
 
     override suspend fun updateScenario(
         scenarioId: Scenario.Id,
         blueprint: Blueprint.Json
     ): Result<Scenario> =
-        makeAdapter.updateScenario(scenarioId, blueprint, token)
+        makeAdapter.updateScenario(blueprint, UpdateScenarioContext(authToken, scenarioId))
 
     override suspend fun updateScenario(
         scenarioId: Scenario.Id,
         filePath: Path
     ): Result<Scenario> =
-        makeAdapter.updateScenario(scenarioId, fromFile(filePath), token)
+        makeAdapter.updateScenario(fromFile(filePath), UpdateScenarioContext(authToken, scenarioId))
 
     override suspend fun getBlueprint(scenarioId: Scenario.Id): Result<Blueprint> =
-        makeAdapter.getBlueprint(scenarioId, token)
+        makeAdapter.getBlueprint(scenarioId, authToken)
 
     override suspend fun getBlueprints(scenarioIds: List<Scenario.Id>): Result<List<Blueprint>> =
         scenarioIds.map {
             coroutineScope {
                 async {
-                    makeAdapter.getBlueprint(it, token)
+                    makeAdapter.getBlueprint(it, authToken)
                 }
             }
         }.awaitAll().toResult()
@@ -60,7 +60,7 @@ class DefaultMakeClient(private val makeAdapter: MakeAdapter, private val token:
         key: String,
         value: String
     ): Result<UpdateResult> =
-        makeAdapter.setModuleData(scenarioId, moduleId, key, value, token)
+        makeAdapter.setModuleData(key, value, SetModuleDataContext(authToken, scenarioId, moduleId))
 
     override suspend fun setModuleData(
         scenarioId: Scenario.Id,
@@ -69,7 +69,11 @@ class DefaultMakeClient(private val makeAdapter: MakeAdapter, private val token:
         moduleUpdates.map {
             coroutineScope {
                 async {
-                    makeAdapter.setModuleData(scenarioId, it.moduleId, it.key, it.value, token)
+                    makeAdapter.setModuleData(
+                        it.key,
+                        it.value,
+                        SetModuleDataContext(authToken, scenarioId, it.moduleId)
+                    )
                 }
             }
         }.awaitAll().toResult().map { rs -> UpdateResult(rs.all { it.result }) }

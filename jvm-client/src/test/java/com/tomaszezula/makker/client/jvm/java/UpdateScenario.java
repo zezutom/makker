@@ -27,10 +27,9 @@ public class UpdateScenario {
     }
 
     private static void fromEncodedBlueprint() throws ExecutionException, InterruptedException {
-        makeClient.updateScenario(
+        makeClient.updateScenarioEncoded(
                 473703,
-                Base64.getEncoder().encodeToString(updatedBlueprint.getBytes()),
-                true
+                Base64.getEncoder().encodeToString(updatedBlueprint.getBytes())
         ).whenComplete((scenario, ex) -> {
             if (ex != null) {
                 ex.printStackTrace();

@@ -3,6 +3,7 @@ package com.tomaszezula.makker.client.jvm
 import com.tomaszezula.makker.client.jvm.model.ModuleUpdate
 import com.tomaszezula.makker.common.MakeAdapter
 import com.tomaszezula.makker.common.model.Blueprint
+import com.tomaszezula.makker.common.model.SetModuleDataContext
 import com.tomaszezula.makker.common.model.UpdateResult
 import io.kotest.assertions.fail
 import io.kotest.common.runBlocking
@@ -17,33 +18,33 @@ class SetModuleDataTest : StringSpec() {
         val makeAdapter = mockk<MakeAdapter>()
         val makeClient = DefaultMakeClient(makeAdapter, token)
 
-        val fieldName = "field1"
-        val data = "hello world"
+        val key = "field1"
+        val value = "hello world"
 
         this.coroutineTestScope = true
 
         "Set module data should succeed" {
             every {
                 runBlocking {
-                    makeAdapter.setModuleData(scenario.id, module.id, fieldName, data, token)
+                    makeAdapter.setModuleData(key, value, SetModuleDataContext(token, scenario.id, module.id))
                 }
             } returns Result.success(UpdateResult(true))
-            makeClient.setModuleData(scenario.id, module.id, fieldName, data).map {
+            makeClient.setModuleData(scenario.id, module.id, key, value).map {
                 it shouldBe UpdateResult.Success
             }
             verify(exactly = 1) {
                 runBlocking {
-                    makeAdapter.setModuleData(scenario.id, module.id, fieldName, data, token)
+                    makeAdapter.setModuleData(key, value, SetModuleDataContext(token, scenario.id, module.id))
                 }
             }
         }
         "Set module data should respect the result returned by the underlying Make adapter" {
             every {
                 runBlocking {
-                    makeAdapter.setModuleData(scenario.id, module.id, fieldName, data, token)
+                    makeAdapter.setModuleData(key, value, SetModuleDataContext(token, scenario.id, module.id))
                 }
             } returns Result.success(UpdateResult.Failure)
-            makeClient.setModuleData(scenario.id, module.id, fieldName, data).map {
+            makeClient.setModuleData(scenario.id, module.id, key, value).map {
                 it shouldBe UpdateResult.Failure
             }
         }
@@ -51,10 +52,10 @@ class SetModuleDataTest : StringSpec() {
             val throwable = IllegalStateException("Something went wrong!")
             every {
                 runBlocking {
-                    makeAdapter.setModuleData(scenario.id, module.id, fieldName, data, token)
+                    makeAdapter.setModuleData(key, value, SetModuleDataContext(token, scenario.id, module.id))
                 }
             } returns Result.failure(throwable)
-            makeClient.setModuleData(scenario.id, module.id, fieldName, data)
+            makeClient.setModuleData(scenario.id, module.id, key, value)
                 .onFailure {
                     it shouldBe throwable
                 }
@@ -71,7 +72,11 @@ class SetModuleDataTest : StringSpec() {
             moduleUpdates.forEach {
                 every {
                     runBlocking {
-                        makeAdapter.setModuleData(scenario.id, it.moduleId, it.key, it.value, token)
+                        makeAdapter.setModuleData(
+                            it.key,
+                            it.value,
+                            SetModuleDataContext(token, scenario.id, it.moduleId)
+                        )
                     }
                 } returns Result.success(UpdateResult.Success)
             }
@@ -82,7 +87,11 @@ class SetModuleDataTest : StringSpec() {
             moduleUpdates.forEach {
                 verify(exactly = 1) {
                     runBlocking {
-                        makeAdapter.setModuleData(scenario.id, it.moduleId, it.key, it.value, token)
+                        makeAdapter.setModuleData(
+                            it.key,
+                            it.value,
+                            SetModuleDataContext(token, scenario.id, it.moduleId)
+                        )
                     }
                 }
             }
@@ -96,7 +105,11 @@ class SetModuleDataTest : StringSpec() {
             moduleUpdateMap.entries.forEach {
                 every {
                     runBlocking {
-                        makeAdapter.setModuleData(scenario.id, it.key.moduleId, it.key.key, it.key.value, token)
+                        makeAdapter.setModuleData(
+                            it.key.key,
+                            it.key.value,
+                            SetModuleDataContext(token, scenario.id, it.key.moduleId)
+                        )
                     }
                 } returns Result.success(UpdateResult(it.value))
             }

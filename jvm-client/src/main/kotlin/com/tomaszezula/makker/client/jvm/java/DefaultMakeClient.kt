@@ -24,17 +24,16 @@ class DefaultMakeClient(private val makeClient: MakeClient) :
             )
         }
 
-    override fun createScenario(
+    override fun createScenarioEncoded(
         teamId: Int,
         folderId: Int,
         blueprint: String,
-        encoded: Boolean
     ): CompletableFuture<Scenario> =
         asCompletableFuture {
             makeClient.createScenario(
                 Scenario.TeamId(teamId),
                 Scenario.FolderId(folderId),
-                Blueprint.Json(blueprint, encoded),
+                Blueprint.Json(blueprint, true),
                 IndefiniteScheduling()
             )
         }
@@ -54,18 +53,17 @@ class DefaultMakeClient(private val makeClient: MakeClient) :
             )
         }
 
-    override fun createScenario(
+    override fun createScenarioEncoded(
         teamId: Int,
         folderId: Int,
         blueprint: String,
-        encoded: Boolean,
         scheduling: Scheduling
     ): CompletableFuture<Scenario> =
         asCompletableFuture {
             makeClient.createScenario(
                 Scenario.TeamId(teamId),
                 Scenario.FolderId(folderId),
-                Blueprint.Json(blueprint, encoded),
+                Blueprint.Json(blueprint, true),
                 scheduling
             )
         }
@@ -91,9 +89,9 @@ class DefaultMakeClient(private val makeClient: MakeClient) :
             makeClient.updateScenario(Scenario.Id(scenarioId), Blueprint.Json(blueprint))
         }
 
-    override fun updateScenario(scenarioId: Int, blueprint: String, encoded: Boolean): CompletableFuture<Scenario> =
+    override fun updateScenarioEncoded(scenarioId: Int, blueprint: String): CompletableFuture<Scenario> =
         asCompletableFuture {
-            makeClient.updateScenario(Scenario.Id(scenarioId), Blueprint.Json(blueprint, encoded))
+            makeClient.updateScenario(Scenario.Id(scenarioId), Blueprint.Json(blueprint, true))
         }
 
     override fun updateScenario(scenarioId: Int, filePath: Path): CompletableFuture<Scenario> =

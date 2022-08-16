@@ -3,21 +3,16 @@ package com.tomaszezula.makker.server
 import com.tomaszezula.makker.common.DefaultMakeAdapter
 import com.tomaszezula.makker.common.MakeConfig
 import com.tomaszezula.makker.common.model.AuthToken
-import com.tomaszezula.makker.server.handler.CreateScenarioHandler
-import com.tomaszezula.makker.server.handler.GetBlueprintHandler
-import com.tomaszezula.makker.server.handler.SetModuleDataHandler
-import com.tomaszezula.makker.server.handler.UpdateScenarioHandler
+import com.tomaszezula.makker.server.handler.Handlers
 import com.tomaszezula.makker.server.model.AnonymousContext
 import com.tomaszezula.makker.server.model.AuthenticatedContext
+import com.tomaszezula.makker.server.plugins.configureLogging
+import com.tomaszezula.makker.server.plugins.configureRetries
 import com.tomaszezula.makker.server.plugins.configureRouting
 import com.tomaszezula.makker.server.plugins.configureSerialization
 import com.typesafe.config.ConfigFactory
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.network.sockets.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.logging.*
-import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.config.*
 import io.ktor.server.engine.*
@@ -34,20 +29,8 @@ fun main() {
 
     val config = HoconApplicationConfig(ConfigFactory.load())
     val client = HttpClient(CIO) {
-        install(Logging) {
-            logger = Logger.DEFAULT
-            level = LogLevel.INFO
-        }
-        install(HttpRequestRetry) {
-            maxRetries = config.maxRetries()
-            retryIf { _, response ->
-                !response.status.isSuccess()
-            }
-            retryOnExceptionIf { _, cause ->
-                cause.isTimeoutException()
-            }
-            exponentialDelay()
-        }
+        configureLogging()
+        configureRetries(config.maxRetries())
     }
     val makeAdapter = DefaultMakeAdapter(config.toMakeConfig(), client, json)
 
@@ -56,13 +39,7 @@ fun main() {
     } ?: AnonymousContext
 
     embeddedServer(Netty, port = config.port, host = config.host) {
-        configureRouting(
-            CreateScenarioHandler(makeAdapter),
-            UpdateScenarioHandler(makeAdapter),
-            GetBlueprintHandler(makeAdapter),
-            SetModuleDataHandler(makeAdapter),
-            context
-        )
+        configureRouting(Handlers(makeAdapter), context)
         configureSerialization()
     }.start(wait = true)
 }
@@ -79,10 +56,3 @@ private fun HoconApplicationConfig.toMakeConfig(): MakeConfig =
 
 private fun HoconApplicationConfig.toAuthToken(): AuthToken? =
     this.propertyOrNull(AuthTokenProperty)?.let { AuthToken(it.toString()) }
-
-private fun Throwable.isTimeoutException(): Boolean = when (this) {
-    is HttpRequestTimeoutException -> true
-    is ConnectTimeoutException -> true
-    is SocketTimeoutException -> true
-    else -> false
-}
