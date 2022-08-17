@@ -5,7 +5,6 @@ import com.tomaszezula.makker.server.model.*
 import com.tomaszezula.makker.server.plugins.runSuspendCatching
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import org.slf4j.Logger
 
@@ -19,14 +18,21 @@ suspend inline fun <reified T : Request> respond(
 ): suspend (ApplicationCall) -> Unit = { call ->
     runSuspendCatching {
         when (context) {
-            is AuthenticatedContext -> handler.handle(call.receive(), context.token)
+            is AuthenticatedContext ->
+                handler.handle(f(call), context.token)
             is AnonymousContext ->
                 call.toAuthToken()?.let { token ->
-                    handler.handle(f(call), token).getOrThrow()
+                    handler.handle(f(call), token)
                 } ?: throw MissingAuthTokenException()
         }
-    }.onSuccess {
-        call.toHttp(it as Response)
+    }.onSuccess { result ->
+        result
+            .onSuccess {
+                call.toHttp(it)
+            }
+            .onFailure {
+                call.toError(it)
+            }
     }.onFailure {
         logger.warn("Request failed", it)
         call.toError(it)

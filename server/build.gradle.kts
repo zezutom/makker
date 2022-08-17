@@ -9,6 +9,7 @@ plugins {
 
 val ktorVersion: String by project
 val logbackVersion: String by project
+val mockkVersion: String by project
 
 application {
     mainClass.set("com.tomaszezula.makker.server.ApplicationKt")
@@ -42,7 +43,9 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation(project(":common"))
     implementation(project(":jvm-client"))
-    testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
+    testImplementation("io.mockk:mockk:$mockkVersion")
+    testImplementation(kotlin("test"))
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
 }
 
 tasks.named("build") {
