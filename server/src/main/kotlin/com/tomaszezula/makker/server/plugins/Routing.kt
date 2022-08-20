@@ -47,12 +47,14 @@ private fun getBlueprintRequest(call: ApplicationCall) =
 fun ApplicationCall.getOrThrow(param: String): String =
     this.parameters[param] ?: throw IllegalStateException("Parameter '$param' was expected, but it is missing.")
 
-private suspend inline fun <reified T : Request> Handler<T>.handle(context: RequestContext): suspend (ApplicationCall) -> Unit =
+private suspend inline fun <reified T : Request> Handler<T>.handle(
+    context: RequestContext
+): suspend (ApplicationCall) -> Unit =
     respond(this, context, LoggerFactory.getLogger(this::class.java)) {
         it.receive()
     }
 
 private suspend inline fun <reified T : Request> Handler<T>.handle(
     context: RequestContext,
-    crossinline f: suspend (ApplicationCall) -> T
+    noinline f: suspend (ApplicationCall) -> T
 ): suspend (ApplicationCall) -> Unit = respond(this, context, LoggerFactory.getLogger(this::class.java), f)

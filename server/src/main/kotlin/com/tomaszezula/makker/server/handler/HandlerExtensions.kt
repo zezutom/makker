@@ -10,11 +10,11 @@ import org.slf4j.Logger
 
 const val AuthTokenHeader = "X-Auth-Token"
 
-suspend inline fun <reified T : Request> respond(
+suspend fun <T : Request> respond(
     handler: Handler<T>,
     context: RequestContext,
     logger: Logger,
-    crossinline f: suspend (ApplicationCall) -> T
+    f: suspend (ApplicationCall) -> T
 ): suspend (ApplicationCall) -> Unit = { call ->
     runSuspendCatching {
         when (context) {
@@ -27,14 +27,12 @@ suspend inline fun <reified T : Request> respond(
         }
     }.onSuccess { result ->
         result
-            .onSuccess {
-                call.toHttp(it)
-            }
+            .onSuccess { call.toHttp(it) }
             .onFailure {
+                logger.warn("Request failed", it)
                 call.toError(it)
             }
     }.onFailure {
-        logger.warn("Request failed", it)
         call.toError(it)
     }
 }
