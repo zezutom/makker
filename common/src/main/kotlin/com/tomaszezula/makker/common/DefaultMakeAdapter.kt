@@ -77,6 +77,7 @@ class DefaultMakeAdapter(
                 blueprintJson[NameKey]?.jsonPrimitive?.content?.let { name ->
                     Blueprint(
                         name,
+                        scenarioId,
                         extractModules(blueprintJson),
                         Blueprint.Json(blueprintJson.toString())
                     )

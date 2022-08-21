@@ -12,6 +12,8 @@ jsonSchema2Pojo {
 }
 
 val jacksonVersion: String by project
+val mockkVersion: String by project
+val kotestVersion: String by project
 val ktorVersion: String by project
 
 dependencies {
@@ -23,6 +25,12 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
     testImplementation(kotlin("test"))
     testImplementation(("io.ktor:ktor-client-mock:$ktorVersion"))
+    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
+    testImplementation("io.mockk:mockk:$mockkVersion")
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
 
 tasks.test {

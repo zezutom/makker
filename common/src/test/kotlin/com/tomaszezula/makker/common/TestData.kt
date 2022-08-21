@@ -1,9 +1,9 @@
 package com.tomaszezula.makker.common
 
+import com.tomaszezula.makker.common.model.Blueprint
+import com.tomaszezula.makker.common.model.Scenario
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
-import com.tomaszezula.makker.common.model.Scenario
-import com.tomaszezula.makker.common.model.Blueprint
 
 object Scenario {
     val response =
@@ -118,19 +118,10 @@ object Blueprint {
     private val blueprintJson: JsonElement = Json.parseToJsonElement(blueprint)
     val expected = Blueprint(
         "Empty integration",
+        Scenario.Id(1),
         listOf(
             Blueprint.Module(Blueprint.Module.Id(2), "json:ParseJSON")
         ),
         Blueprint.Json(blueprintJson.toString())
     )
-}
-
-object Module {
-    val response =
-        """
-        {
-          "updated": true
-        }
-        """.trim()
-    val expected = true
 }

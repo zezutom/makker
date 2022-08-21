@@ -39,7 +39,7 @@ class GetBlueprintV1Test {
     private fun getScenario(requestContext: RequestContext, shouldSucceed: Boolean = true) = testApplication {
         val makeAdapter = mockk<MakeAdapter>()
         val scenarioId = Scenario.Id(1)
-        val blueprint = Blueprint("Test blueprint", emptyList(), Blueprint.Json("{}"))
+        val blueprint = Blueprint("Test blueprint", scenarioId, emptyList(), Blueprint.Json("{}"))
         val result = result(blueprint, shouldSucceed)
         every {
             runBlocking {
@@ -54,7 +54,7 @@ class GetBlueprintV1Test {
             assertEquals(HttpStatusCode.OK, response.status)
             assertEquals(
                 """
-               {"name":"Test blueprint","modules":[],"json":{"value":"{}","encoded":false}}
+               {"name":"Test blueprint","scenarioId":1,"modules":[],"json":{"value":"{}","encoded":false}}
             """.trim(),
                 response.bodyAsText()
             )

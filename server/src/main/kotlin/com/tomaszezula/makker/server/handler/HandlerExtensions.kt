@@ -1,8 +1,8 @@
 package com.tomaszezula.makker.server.handler
 
 import com.tomaszezula.makker.common.model.AuthToken
+import com.tomaszezula.makker.common.runSuspendCatching
 import com.tomaszezula.makker.server.model.*
-import com.tomaszezula.makker.server.plugins.runSuspendCatching
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
