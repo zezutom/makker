@@ -51,38 +51,44 @@ class DefaultMakeAdapter(
         scheduling: Scheduling,
         context: CreateScenarioContext
     ): Result<Scenario> =
-        scheduling.validate().map { schedule ->
-            post(createScenarioUrl, context.authToken, buildJsonObject {
-                put(BlueprintKey, blueprint.toJson())
-                put(SchedulingKey, schedule.toJson())
-                put(TeamIdKey, context.teamId.value)
-                put(FolderIdKey, context.folderId.value)
-            }) { it.toScenario() }
-        }.getOrThrow()
+        runSuspendCatching {
+            scheduling.validate().map { schedule ->
+                post(createScenarioUrl, context.authToken, buildJsonObject {
+                    put(BlueprintKey, blueprint.toJson())
+                    put(SchedulingKey, schedule.toJson())
+                    put(TeamIdKey, context.teamId.value)
+                    put(FolderIdKey, context.folderId.value)
+                }) { it.toScenario() }.getOrThrow()
+            }.getOrThrow()
+        }
 
     override suspend fun updateScenario(
         blueprint: Blueprint.Json,
         context: UpdateScenarioContext
     ): Result<Scenario> =
-        patch(
-            "${config.baseUrl}/scenarios/${context.scenarioId.value}?confirmed=true",
-            context.authToken,
-            buildJsonObject {
-                put(BlueprintKey, blueprint.toJson())
-            }) { it.toScenario() }
+        runSuspendCatching {
+            patch(
+                "${config.baseUrl}/scenarios/${context.scenarioId.value}?confirmed=true",
+                context.authToken,
+                buildJsonObject {
+                    put(BlueprintKey, blueprint.toJson())
+                }) { it.toScenario() }.getOrThrow()
+        }
 
     override suspend fun getBlueprint(scenarioId: Scenario.Id, token: AuthToken): Result<Blueprint> =
-        get("${config.baseUrl}/scenarios/${scenarioId.value}/blueprint", token) { responseJson ->
-            jsonObject(responseJson, ResponseKey, BlueprintKey)?.let { blueprintJson ->
-                blueprintJson[NameKey]?.jsonPrimitive?.content?.let { name ->
-                    Blueprint(
-                        name,
-                        scenarioId,
-                        extractModules(blueprintJson),
-                        Blueprint.Json(blueprintJson.toString())
-                    )
+        runSuspendCatching {
+            get("${config.baseUrl}/scenarios/${scenarioId.value}/blueprint", token) { responseJson ->
+                jsonObject(responseJson, ResponseKey, BlueprintKey)?.let { blueprintJson ->
+                    blueprintJson[NameKey]?.jsonPrimitive?.content?.let { name ->
+                        Blueprint(
+                            name,
+                            scenarioId,
+                            extractModules(blueprintJson),
+                            Blueprint.Json(blueprintJson.toString())
+                        )
+                    }
                 }
-            }
+            }.getOrThrow()
         }
 
     override suspend fun setModuleData(
@@ -90,15 +96,17 @@ class DefaultMakeAdapter(
         value: String,
         context: SetModuleDataContext
     ): Result<UpdateResult> {
-        val updatedBlueprint = updateBlueprint(context, value, key)
+        return runSuspendCatching {
+            val updatedBlueprint = updateBlueprint(context, value, key)
 
-        return patch(
-            "${config.baseUrl}/scenarios/${context.scenarioId.value}?confirmed=true",
-            context.authToken,
-            buildJsonObject {
-                put(BlueprintKey, objectMapper.writeValueAsString(updatedBlueprint.response.blueprint))
-            }) {
-            UpdateResult.Success
+            return patch(
+                "${config.baseUrl}/scenarios/${context.scenarioId.value}?confirmed=true",
+                context.authToken,
+                buildJsonObject {
+                    put(BlueprintKey, objectMapper.writeValueAsString(updatedBlueprint.response.blueprint))
+                }) {
+                UpdateResult.Success
+            }
         }
     }
 

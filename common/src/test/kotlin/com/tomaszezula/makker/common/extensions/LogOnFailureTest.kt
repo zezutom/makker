@@ -2,6 +2,7 @@ package com.tomaszezula.makker.common.extensions
 
 import com.tomaszezula.makker.common.logOnFailure
 import io.kotest.core.spec.style.StringSpec
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.slf4j.Logger
@@ -19,12 +20,19 @@ class LogOnFailureTest : StringSpec() {
             }
         }
     }
-    private fun<T> test(message: String = "test message", shouldLog: Boolean = true, block: () -> Result<T>) {
+    private fun<T> test(shouldLog: Boolean = true, block: () -> Result<T>) {
         val logger = mockk<Logger>()
-        block().logOnFailure { logger.warn(message) }
+        every {
+            logger.info(any())
+        } returns Unit
 
-        verify(exactly = if (shouldLog) 1 else 0) {
-            logger.warn(message)
+        block().logOnFailure {
+            val message = it.message.orEmpty()
+            logger.info(message)
+
+            verify(exactly = if (shouldLog) 1 else 0) {
+                logger.info(message)
+            }
         }
     }
 }

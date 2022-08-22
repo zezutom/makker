@@ -2,6 +2,7 @@ package com.tomaszezula.makker.common.extensions
 
 import com.tomaszezula.makker.common.logOnSuccess
 import io.kotest.core.spec.style.StringSpec
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.slf4j.Logger
@@ -19,12 +20,19 @@ class LogOnSuccessTest : StringSpec() {
             }
         }
     }
-    private fun<T> test(message: String = "test message", shouldLog: Boolean = true, block: () -> Result<T>) {
+    private fun<T> test(shouldLog: Boolean = true, block: () -> Result<T>) {
         val logger = mockk<Logger>()
-        block().logOnSuccess { logger.info(message) }
+        every {
+            logger.info(any())
+        } returns Unit
 
-        verify(exactly = if (shouldLog) 1 else 0) {
+        block().logOnSuccess {
+            val message = it.toString()
             logger.info(message)
+
+            verify(exactly = if (shouldLog) 1 else 0) {
+                logger.info(message)
+            }
         }
     }
 }

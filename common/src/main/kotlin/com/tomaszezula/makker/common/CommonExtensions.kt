@@ -30,13 +30,11 @@ suspend fun <A, B> Result<A>.then(block: suspend (A) -> Result<B>): Result<B> =
         }.getOrThrow()
     }
 
-fun <T> Result<T>.logOnSuccess(block: () -> Unit): Result<T> =
-    runSuspendCatching {
-        this.onSuccess { block() }.getOrThrow()
+fun <T> Result<T>.logOnSuccess(block: (T) -> Unit): Result<T> =
+    this.onSuccess {
+        block(it)
     }
 
-fun <T> Result<T>.logOnFailure(block: () -> Unit): Result<T> =
-    runSuspendCatching {
-        this.onFailure { block() }.getOrThrow()
-    }
 
+fun <T> Result<T>.logOnFailure(block: (Throwable) -> Unit): Result<T> =
+    this.onFailure { block(it) }
