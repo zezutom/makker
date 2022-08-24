@@ -12,10 +12,10 @@ class ThenTest : StringSpec() {
             val multiplier = 2
             Result(CompletableFuture.completedFuture(x))
                 .then {
-                    CompletableFuture.completedFuture(it * multiplier)
+                    Result(CompletableFuture.completedFuture(it * multiplier))
                 }
                 .then {
-                    CompletableFuture.completedFuture(it.toString())
+                    Result(CompletableFuture.completedFuture(it.toString()))
                 }.orThrow shouldBe (x * multiplier).toString()
         }
     }

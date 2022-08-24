@@ -2,10 +2,15 @@ package com.tomaszezula.makker.client.jvm.java
 
 import com.tomaszezula.makker.client.jvm.MakeClient
 import com.tomaszezula.makker.client.jvm.java.model.ModuleUpdate
+import com.tomaszezula.makker.client.jvm.java.model.Scenario
+import com.tomaszezula.makker.common.model.Scenario as CommonScenario
 import com.tomaszezula.makker.common.asCompletableFuture
-import com.tomaszezula.makker.common.model.*
+import com.tomaszezula.makker.common.java.Result
+import com.tomaszezula.makker.common.model.Blueprint
+import com.tomaszezula.makker.common.model.IndefiniteScheduling
+import com.tomaszezula.makker.common.model.Scheduling
+import com.tomaszezula.makker.common.model.UpdateResult
 import java.nio.file.Path
-import java.util.concurrent.CompletableFuture
 
 class DefaultMakeClient(private val makeClient: MakeClient) :
     com.tomaszezula.makker.client.jvm.java.MakeClient {
@@ -14,120 +19,169 @@ class DefaultMakeClient(private val makeClient: MakeClient) :
         teamId: Int,
         folderId: Int,
         blueprint: String
-    ): CompletableFuture<Scenario> =
-        asCompletableFuture {
-            makeClient.createScenario(
-                Scenario.TeamId(teamId),
-                Scenario.FolderId(folderId),
-                Blueprint.Json(blueprint),
-                IndefiniteScheduling()
-            )
-        }
+    ): Result<Scenario> =
+        Result(
+            asCompletableFuture {
+                makeClient.createScenario(
+                    CommonScenario.TeamId(teamId),
+                    CommonScenario.FolderId(folderId),
+                    Blueprint.Json(blueprint),
+                    IndefiniteScheduling()
+                ).map { it.toModel() }
+            }
+        )
 
     override fun createScenarioEncoded(
         teamId: Int,
         folderId: Int,
         blueprint: String,
-    ): CompletableFuture<Scenario> =
-        asCompletableFuture {
-            makeClient.createScenario(
-                Scenario.TeamId(teamId),
-                Scenario.FolderId(folderId),
-                Blueprint.Json(blueprint, true),
-                IndefiniteScheduling()
-            )
-        }
+    ): Result<Scenario> =
+        Result(
+            asCompletableFuture {
+                makeClient.createScenario(
+                    CommonScenario.TeamId(teamId),
+                    CommonScenario.FolderId(folderId),
+                    Blueprint.Json(blueprint, true),
+                    IndefiniteScheduling()
+                ).map { it.toModel() }
+            }
+        )
 
     override fun createScenario(
         teamId: Int,
         folderId: Int,
         blueprint: String,
         scheduling: Scheduling
-    ): CompletableFuture<Scenario> =
-        asCompletableFuture {
-            makeClient.createScenario(
-                Scenario.TeamId(teamId),
-                Scenario.FolderId(folderId),
-                Blueprint.Json(blueprint),
-                scheduling
-            )
-        }
+    ): Result<Scenario> =
+        Result(
+            asCompletableFuture {
+                makeClient.createScenario(
+                    CommonScenario.TeamId(teamId),
+                    CommonScenario.FolderId(folderId),
+                    Blueprint.Json(blueprint),
+                    scheduling
+                ).map { it.toModel() }
+            }
+        )
 
     override fun createScenarioEncoded(
         teamId: Int,
         folderId: Int,
         blueprint: String,
         scheduling: Scheduling
-    ): CompletableFuture<Scenario> =
-        asCompletableFuture {
-            makeClient.createScenario(
-                Scenario.TeamId(teamId),
-                Scenario.FolderId(folderId),
-                Blueprint.Json(blueprint, true),
-                scheduling
-            )
-        }
+    ): Result<Scenario> =
+        Result(
+            asCompletableFuture {
+                makeClient.createScenario(
+                    CommonScenario.TeamId(teamId),
+                    CommonScenario.FolderId(folderId),
+                    Blueprint.Json(blueprint, true),
+                    scheduling
+                ).map { it.toModel() }
+            }
+        )
 
-    override fun createScenario(teamId: Int, folderId: Int, filePath: Path): CompletableFuture<Scenario> =
-        asCompletableFuture {
-            makeClient.createScenario(Scenario.TeamId(teamId), Scenario.FolderId(folderId), filePath, IndefiniteScheduling())
-        }
+    override fun createScenario(teamId: Int, folderId: Int, filePath: Path): Result<Scenario> =
+        Result(
+            asCompletableFuture {
+                makeClient.createScenario(
+                    CommonScenario.TeamId(teamId),
+                    CommonScenario.FolderId(folderId),
+                    filePath,
+                    IndefiniteScheduling()
+                ).map { it.toModel() }
+            }
+        )
 
     override fun createScenario(
         teamId: Int,
         folderId: Int,
         filePath: Path,
         scheduling: Scheduling
-    ): CompletableFuture<Scenario> =
-        asCompletableFuture {
-            makeClient.createScenario(Scenario.TeamId(teamId), Scenario.FolderId(folderId), filePath, scheduling)
-        }
+    ): Result<Scenario> =
+        Result(
+            asCompletableFuture {
+                makeClient.createScenario(
+                    CommonScenario.TeamId(teamId),
+                    CommonScenario.FolderId(folderId),
+                    filePath,
+                    scheduling
+                ).map { it.toModel() }
+            }
+        )
 
+    override fun updateScenario(scenarioId: Int, blueprint: String): Result<Scenario> =
+        Result(
+            asCompletableFuture {
+                makeClient.updateScenario(
+                    CommonScenario.Id(scenarioId),
+                    Blueprint.Json(blueprint)
+                ).map { it.toModel() }
+            }
+        )
 
-    override fun updateScenario(scenarioId: Int, blueprint: String): CompletableFuture<Scenario> =
-        asCompletableFuture {
-            makeClient.updateScenario(Scenario.Id(scenarioId), Blueprint.Json(blueprint))
-        }
+    override fun updateScenarioEncoded(scenarioId: Int, blueprint: String): Result<Scenario> =
+        Result(
+            asCompletableFuture {
+                makeClient.updateScenario(
+                    CommonScenario.Id(scenarioId),
+                    Blueprint.Json(blueprint, true)
+                ).map { it.toModel() }
+            }
+        )
 
-    override fun updateScenarioEncoded(scenarioId: Int, blueprint: String): CompletableFuture<Scenario> =
-        asCompletableFuture {
-            makeClient.updateScenario(Scenario.Id(scenarioId), Blueprint.Json(blueprint, true))
-        }
+    override fun updateScenario(scenarioId: Int, filePath: Path): Result<Scenario> =
+        Result(
+            asCompletableFuture {
+                makeClient.updateScenario(
+                    CommonScenario.Id(scenarioId),
+                    filePath
+                ).map { it.toModel() }
+            }
+        )
 
-    override fun updateScenario(scenarioId: Int, filePath: Path): CompletableFuture<Scenario> =
-        asCompletableFuture {
-            makeClient.updateScenario(Scenario.Id(scenarioId), filePath)
-        }
+    override fun getBlueprint(scenarioId: Int): Result<Blueprint> =
+        Result(
+            asCompletableFuture {
+                makeClient.getBlueprint(CommonScenario.Id(scenarioId))
+            }
+        )
 
-    override fun getBlueprint(scenarioId: Int): CompletableFuture<Blueprint> =
-        asCompletableFuture {
-            makeClient.getBlueprint(Scenario.Id(scenarioId))
-        }
-
-    override fun getBlueprints(scenarioIds: List<Int>): CompletableFuture<List<Blueprint>> =
-        asCompletableFuture {
-            makeClient.getBlueprints(scenarioIds.map { Scenario.Id(it) })
-        }
+    override fun getBlueprints(scenarioIds: List<Int>): Result<List<Blueprint>> =
+        Result(
+            asCompletableFuture {
+                makeClient.getBlueprints(scenarioIds.map { CommonScenario.Id(it) })
+            }
+        )
 
     override fun setModuleData(
         scenarioId: Int,
         moduleId: Int,
         key: String,
         value: String
-    ): CompletableFuture<UpdateResult> =
-        asCompletableFuture {
-            makeClient.setModuleData(Scenario.Id(scenarioId), Blueprint.Module.Id(moduleId), key, value)
-        }
+    ): Result<UpdateResult> =
+        Result(
+            asCompletableFuture {
+                makeClient.setModuleData(
+                    CommonScenario.Id(scenarioId),
+                    Blueprint.Module.Id(moduleId),
+                    key,
+                    value
+                )
+            }
+        )
 
     override fun setModuleData(
         scenarioId: Int,
         moduleUpdates: List<ModuleUpdate>
-    ): CompletableFuture<UpdateResult> =
-        asCompletableFuture {
-            makeClient.setModuleData(Scenario.Id(scenarioId), moduleUpdates.map {
-                com.tomaszezula.makker.client.jvm.model.ModuleUpdate(
-                    Blueprint.Module.Id(it.moduleId), it.key, it.value
-                )
-            })
-        }
+    ): Result<UpdateResult> =
+        Result(
+            asCompletableFuture {
+                makeClient.setModuleData(CommonScenario.Id(scenarioId), moduleUpdates.map {
+                    com.tomaszezula.makker.client.jvm.model.ModuleUpdate(
+                        Blueprint.Module.Id(it.moduleId), it.key, it.value
+                    )
+                })
+            }
+        )
 }

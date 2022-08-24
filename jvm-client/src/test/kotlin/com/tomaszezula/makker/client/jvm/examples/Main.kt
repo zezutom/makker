@@ -26,10 +26,10 @@ fun main() {
                 }.logOnFailure {
                     logger.warn("Failed to receive the scenario's blueprint", it)
                 }
-        }.onFailure { throwable ->
-            println("You got an error. Handle it: ${throwable.message}")
         }.onSuccess { blueprint ->
             println("Do stuff with $blueprint")
+        }.onFailure { throwable ->
+            println("You got an error. Handle it: ${throwable.message}")
         }
     }
 }

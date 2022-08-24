@@ -5,43 +5,43 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class Result<A> {
+public class Result<T> {
 
-    private final CompletableFuture<A> future;
+    private final CompletableFuture<T> future;
 
-    public Result(CompletableFuture<A> future) {
+    public Result(CompletableFuture<T> future) {
         this.future = future;
     }
 
-    public <B> Result<B> then(Function<A, CompletableFuture<B>> block) {
-        return new Result<>(this.future.thenCompose(block));
+    public <U> Result<U> then(Function<T, Result<U>> block) {
+        return new Result<>(this.future.thenCompose(t -> block.apply(t).future));
     }
 
-    public Result<A> onSuccess(Consumer<A> block) {
-        return new Result<>(this.future.whenComplete((a, throwable) -> {
+    public Result<T> onSuccess(Consumer<T> block) {
+        return new Result<>(this.future.whenComplete((t, throwable) -> {
             if (throwable == null) {
-                block.accept(a);
+                block.accept(t);
             }
         }));
     }
 
-    public Result<A> onFailure(Consumer<Throwable> block) {
-        return new Result<>(this.future.whenComplete((a, throwable) -> {
+    public Result<T> onFailure(Consumer<Throwable> block) {
+        return new Result<>(this.future.whenComplete((t, throwable) -> {
             if (throwable != null) {
                 block.accept(throwable);
             }
         }));
     }
 
-    public Result<A> logOnSuccess(Consumer<A> block) {
+    public Result<T> logOnSuccess(Consumer<T> block) {
         return onSuccess(block);
     }
 
-    public Result<A> logOnFailure(Consumer<Throwable> block) {
+    public Result<T> logOnFailure(Consumer<Throwable> block) {
         return onFailure(block);
     }
 
-    public A getOrNull() {
+    public T getOrNull() {
         try {
             return this.future.get();
         } catch (InterruptedException | ExecutionException ex) {
@@ -49,12 +49,12 @@ public class Result<A> {
         }
     }
 
-    public A getOrThrow() {
+    public T getOrThrow() {
         try {
-            A a = this.future.get();
-            if (a == null) {
+            T t = this.future.get();
+            if (t == null) {
                 throw new RuntimeException("The value is null!");
-            } else return a;
+            } else return t;
         } catch (InterruptedException | ExecutionException ex) {
             throw new RuntimeException(ex);
         }

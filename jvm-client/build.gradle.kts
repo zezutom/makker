@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    id("org.jetbrains.kotlin.plugin.serialization")
     jacoco
 }
 

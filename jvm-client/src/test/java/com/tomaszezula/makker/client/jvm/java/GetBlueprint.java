@@ -1,33 +1,24 @@
 package com.tomaszezula.makker.client.jvm.java;
 
 import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
 
 import static com.tomaszezula.makker.client.jvm.java.Config.makeClient;
 
 public class GetBlueprint {
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
+    public static void main(String[] args) {
         single();
         multiple();
     }
 
-    private static void single() throws ExecutionException, InterruptedException {
-        makeClient.getBlueprint(471310).whenComplete((blueprint, ex) -> {
-            if (ex != null) {
-                ex.printStackTrace();
-            } else {
-                System.out.println(blueprint);
-            }
-        }).get();
+    private static void single() {
+        makeClient.getBlueprint(471310)
+                .onSuccess(System.out::println)
+                .onFailure(Throwable::printStackTrace);
     }
 
-    private static void multiple() throws ExecutionException, InterruptedException {
-        makeClient.getBlueprints(Arrays.asList(473703, 471310)).whenComplete((blueprints, ex) -> {
-            if (ex != null) {
-                ex.printStackTrace();
-            } else {
-                System.out.println(blueprints);
-            }
-        }).get();
+    private static void multiple() {
+        makeClient.getBlueprints(Arrays.asList(473703, 471310))
+                .onSuccess(System.out::println)
+                .onFailure(Throwable::printStackTrace);
     }
 }

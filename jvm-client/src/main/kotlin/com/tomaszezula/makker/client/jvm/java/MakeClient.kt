@@ -1,12 +1,12 @@
 package com.tomaszezula.makker.client.jvm.java
 
 import com.tomaszezula.makker.client.jvm.java.model.ModuleUpdate
+import com.tomaszezula.makker.client.jvm.java.model.Scenario
+import com.tomaszezula.makker.common.java.Result
 import com.tomaszezula.makker.common.model.Blueprint
-import com.tomaszezula.makker.common.model.Scenario
 import com.tomaszezula.makker.common.model.Scheduling
 import com.tomaszezula.makker.common.model.UpdateResult
 import java.nio.file.Path
-import java.util.concurrent.CompletableFuture
 
 interface MakeClient {
 
@@ -22,68 +22,68 @@ interface MakeClient {
         teamId: Int,
         folderId: Int,
         blueprint: String
-    ): CompletableFuture<Scenario>
+    ): Result<Scenario>
 
     fun createScenario(
         teamId: Int,
         folderId: Int,
         blueprint: String,
         scheduling: Scheduling
-    ): CompletableFuture<Scenario>
+    ): Result<Scenario>
     fun createScenarioEncoded(
         teamId: Int,
         folderId: Int,
         blueprint: String
-    ): CompletableFuture<Scenario>
+    ): Result<Scenario>
 
     fun createScenarioEncoded(
         teamId: Int,
         folderId: Int,
         blueprint: String,
         scheduling: Scheduling
-    ): CompletableFuture<Scenario>
+    ): Result<Scenario>
 
     fun createScenario(
         teamId: Int,
         folderId: Int,
         filePath: Path
-    ): CompletableFuture<Scenario>
+    ): Result<Scenario>
 
     fun createScenario(
         teamId: Int,
         folderId: Int,
         filePath: Path,
         scheduling: Scheduling
-    ): CompletableFuture<Scenario>
+    ): Result<Scenario>
 
     fun updateScenario(
         scenarioId: Int,
         blueprint: String
-    ): CompletableFuture<Scenario>
+    ): Result<Scenario>
 
     fun updateScenarioEncoded(
         scenarioId: Int,
         blueprint: String
-    ): CompletableFuture<Scenario>
+    ): Result<Scenario>
 
     fun updateScenario(
         scenarioId: Int,
         filePath: Path
-    ): CompletableFuture<Scenario>
+    ): Result<Scenario>
 
-    fun getBlueprint(scenarioId: Int): CompletableFuture<Blueprint>
+    fun getBlueprint(scenarioId: Int): Result<Blueprint>
 
-    fun getBlueprints(scenarioIds: List<Int>): CompletableFuture<List<Blueprint>>
+    fun getBlueprints(scenarioIds: List<Int>): Result<List<Blueprint>>
 
     fun setModuleData(
         scenarioId: Int,
         moduleId: Int,
         key: String,
         value: String
-    ): CompletableFuture<UpdateResult>
+    ): Result<UpdateResult>
 
     fun setModuleData(
         scenarioId: Int,
         moduleUpdates: List<ModuleUpdate>
-    ): CompletableFuture<UpdateResult>
+    ): Result<UpdateResult>
 }

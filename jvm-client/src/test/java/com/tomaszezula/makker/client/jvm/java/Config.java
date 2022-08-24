@@ -1,6 +1,9 @@
 package com.tomaszezula.makker.client.jvm.java;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -9,7 +12,9 @@ import java.nio.file.Path;
 import java.util.Objects;
 
 public class Config {
-    public static final MakeClient makeClient = MakeClient.Companion.eu("4cdee210-caaf-407d-afb9-7cc1ef452ac9");
+    public static Logger logger = LoggerFactory.getLogger("Main");
+
+    public static final MakeClient makeClient = MakeClient.Companion.eu("REPLACE-WITH-YOUR-API-KEY");
 
     public static final String blueprint = readResource("blueprint.json");
     public static final String updatedBlueprint = readResource("blueprint-updated.json");
