@@ -28,7 +28,7 @@ class SetModuleDataTest : StringSpec() {
                 runBlocking {
                     makeAdapter.setModuleData(key, value, SetModuleDataContext(token, scenario.id, module.id))
                 }
-            } returns Result.success(UpdateResult(true))
+            } returns Result.success(UpdateResult.Success)
             makeClient.setModuleData(scenario.id, module.id, key, value).map {
                 it shouldBe UpdateResult.Success
             }

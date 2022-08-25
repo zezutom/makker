@@ -18,7 +18,7 @@ import java.util.*
 class CreateScenarioTest : StringSpec() {
     init {
         val makeAdapter = mockk<MakeAdapter>()
-        val makeClient: MakeClient = DefaultMakeClient(makeAdapter, token)
+        val makeClient = DefaultMakeClient(makeAdapter, token)
 
         this.coroutineTestScope = true
 

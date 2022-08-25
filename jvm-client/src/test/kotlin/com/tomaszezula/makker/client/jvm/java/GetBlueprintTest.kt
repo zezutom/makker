@@ -1,6 +1,8 @@
-package com.tomaszezula.makker.client.jvm
+package com.tomaszezula.makker.client.jvm.java
 
-import com.tomaszezula.makker.common.MakeAdapter
+import com.tomaszezula.makker.client.jvm.MakeClient
+import com.tomaszezula.makker.client.jvm.blueprint
+import com.tomaszezula.makker.client.jvm.scenario
 import com.tomaszezula.makker.common.model.Blueprint
 import com.tomaszezula.makker.common.model.Scenario
 import io.kotest.common.runBlocking
@@ -12,23 +14,20 @@ import io.mockk.verify
 
 class GetBlueprintTest : StringSpec() {
     init {
-        val makeAdapter = mockk<MakeAdapter>()
-        val makeClient = DefaultMakeClient(makeAdapter, token)
+        val kotlinClient = mockk<MakeClient>()
+        val makeClient = DefaultMakeClient(kotlinClient)
 
         this.coroutineTestScope = true
 
         "Get blueprint should return the scenario blueprint" {
             every {
                 runBlocking {
-                    makeAdapter.getBlueprint(scenario.id, token)
+                    kotlinClient.getBlueprint(scenario.id)
                 }
             } returns Result.success(blueprint)
 
-            makeClient.getBlueprint(scenario.id).map {
-                it shouldBe blueprint
-            }
+            makeClient.getBlueprint(scenario.id.value).orThrow shouldBe blueprint
         }
-
         "Get blueprints should return a blueprint for each scenario" {
             val blueprintMap = mapOf(
                 Scenario.Id(10) to blueprint.copy(json = Blueprint.Json("{\"name\": \"one\"}")),
@@ -38,18 +37,16 @@ class GetBlueprintTest : StringSpec() {
             blueprintMap.entries.forEach {
                 every {
                     runBlocking {
-                        makeAdapter.getBlueprint(it.key, token)
+                        kotlinClient.getBlueprint(it.key)
                     }
                 } returns Result.success(it.value)
             }
-            makeClient.getBlueprints(blueprintMap.keys.toList()).onSuccess {
+            makeClient.getBlueprints(blueprintMap.keys.map { it.value }).onSuccess {
                 it shouldBe blueprintMap.values.toList()
             }
-            blueprintMap.entries.forEach {
-                verify(exactly = 1) {
-                    runBlocking {
-                        makeAdapter.getBlueprint(it.key, token)
-                    }
+            verify(exactly = 1) {
+                runBlocking {
+                    kotlinClient.getBlueprints(blueprintMap.keys.toList())
                 }
             }
         }

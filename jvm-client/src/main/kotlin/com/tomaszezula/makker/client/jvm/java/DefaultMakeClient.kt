@@ -12,7 +12,7 @@ import com.tomaszezula.makker.common.model.Scheduling
 import com.tomaszezula.makker.common.model.UpdateResult
 import java.nio.file.Path
 
-class DefaultMakeClient(private val makeClient: MakeClient) :
+class DefaultMakeClient (private val makeClient: MakeClient) :
     com.tomaszezula.makker.client.jvm.java.MakeClient {
 
     override fun createScenario(

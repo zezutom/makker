@@ -74,6 +74,7 @@ class UpdateScenarioTest : StringSpec() {
         }
 
         "Update scenario should read the blueprint from a file" {
+            val filePath = Path.of("blueprint.json")
             every {
                 runBlocking {
                     makeAdapter.updateScenario(blueprint.json, UpdateScenarioContext(token, scenario.id))
@@ -81,9 +82,9 @@ class UpdateScenarioTest : StringSpec() {
             } returns Result.success(updatedScenario)
 
             mockkStatic(Files::class)
-            every { Files.readAllLines(any()) } returns listOf(blueprint.json.value)
+            every { Files.readAllLines(filePath) } returns listOf(blueprint.json.value)
 
-            makeClient.updateScenario(scenario.id, Path.of("blueprint.json")).map {
+            makeClient.updateScenario(scenario.id, filePath).map {
                 it shouldBe updatedScenario
             }
         }
