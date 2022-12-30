@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://langnerd.com/schemas/trigger-new-email.json",
+  "type": "object",
+  "properties": {
+    "folder": {
+      "type": "string",
+      "default": "INBOX"
+    },
+    "searchType": {
+      "enum": [
+        "simple"
+      ]
+    },
+    "criteria": {
+      "enum": [
+        "SEEN",
+        "ALL",
+        "UNSEEN"
+      ]
+    },
+    "from": {
+      "type": "string",
+      "format": "email"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "markSeen": {
+      "type": "boolean",
+      "default": false
+    },
+    "maxResults": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "folder",
+    "searchType",
+    "criteria"
+  ],
+  "additionalProperties": false
+}

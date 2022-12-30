@@ -1,3 +1,9 @@
+buildscript {
+    dependencies {
+        classpath("org.jsonschema2pojo:jsonschema2pojo-gradle-plugin:1.1.1")
+    }
+}
+
 val jackson_version: String by project
 val kotlin_version: String by project
 val ktor_version: String by project
@@ -8,6 +14,16 @@ plugins {
     kotlin("jvm") version kotlinVersion
     id("io.ktor.plugin") version "2.2.1"
     id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
+    id("org.jsonschema2dataclass") version "4.2.0"
+}
+
+jsonSchema2Pojo {
+    targetPackage.set("com.tomaszezula.makker.make.api")
+    sourceType.set("jsonschema")
+    source.setFrom(files("${project.rootDir}/src/main/resources/json"))
+    propertyWordDelimiters.set("_")
+    includeGeneratedAnnotation.set(false)
+    generateBuilders.set(true)
 }
 
 group = "com.langnerd.makker"

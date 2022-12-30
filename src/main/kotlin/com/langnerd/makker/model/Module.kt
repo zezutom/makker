@@ -1,12 +1,14 @@
 package com.langnerd.makker.model
 
-sealed interface Module {
-    val name: String
-    val jsonSchema: String
+data class Module(
+    val id: Long,
+    val module: String,
+    val version: Int,
+    val parameters: Map<String, Any>,
+    val metadata: ModuleMetadata? = null,
+    val mapper: Map<String, Any>? = null
+) {
+    data class ModuleMetadata(val designer: Designer) {
+        data class Designer(val x: Int, val y: Int)
+    }
 }
-
-data class Action(override val name: String, override val jsonSchema: String) : Module
-
-data class Feeder(override val name: String, override val jsonSchema: String, val dependsOn: Trigger) : Module
-
-data class Trigger(override val name: String, override val jsonSchema: String) : Module
