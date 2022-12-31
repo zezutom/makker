@@ -9,7 +9,7 @@
     },
     "searchType": {
       "enum": [
-        "simple"
+        "simple", "gmail"
       ]
     },
     "criteria": {

@@ -9,6 +9,9 @@ data class Module(
     val mapper: Map<String, Any>? = null
 ) {
     data class ModuleMetadata(val designer: Designer) {
+        companion object {
+            val Default = ModuleMetadata(Designer(0, 0))
+        }
         data class Designer(val x: Int, val y: Int)
     }
 }
