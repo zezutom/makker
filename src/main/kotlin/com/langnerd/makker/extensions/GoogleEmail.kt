@@ -11,6 +11,7 @@ fun TriggerNewEmail.toModule(id: Long): Module =
         module = "google-email:TriggerNewEmail",
         version = 2,
         parameters = mapOf(
+            "account" to this.account,
             "searchType" to this.searchType.value(),
             "maxResults" to this.maxResults,
             "folder" to this.folder,

@@ -3,13 +3,17 @@
   "$id": "https://langnerd.com/schemas/trigger-new-email.json",
   "type": "object",
   "properties": {
+    "account": {
+      "type": "integer"
+    },
     "folder": {
       "type": "string",
       "default": "INBOX"
     },
     "searchType": {
       "enum": [
-        "simple", "gmail"
+        "simple",
+        "gmail"
       ]
     },
     "criteria": {
@@ -38,6 +42,7 @@
     }
   },
   "required": [
+    "account",
     "folder",
     "searchType",
     "criteria"

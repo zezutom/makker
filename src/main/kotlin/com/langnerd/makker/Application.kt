@@ -16,6 +16,7 @@ fun main() {
     val scenario = FeedAttachments()
         .withInput(
             TriggerNewEmail()
+                .withAccount(235737)
                 .withSearchType(TriggerNewEmail.SearchType.SIMPLE)
                 .withCriteria(TriggerNewEmail.Criteria.SEEN)
                 .withMaxResults(10)
