@@ -9,18 +9,16 @@ import com.tomaszezula.makker.make.api.google_email.feeders.TriggerNewEmail
 
 fun main() {
     val mapper = ObjectMapper().registerKotlinModule().setSerializationInclusion(JsonInclude.Include.NON_NULL)
-//    val makeClient = DefaultMakeClient(mapper)
-//    val modules = makeClient.getModules("google-email")
-//    println(modules)
 
     val scenario = FeedAttachments()
         .withInput(
             TriggerNewEmail()
                 .withAccount(235737)
+                .withFolder("SENT")
                 .withSearchType(TriggerNewEmail.SearchType.SIMPLE)
-                .withCriteria(TriggerNewEmail.Criteria.SEEN)
-                .withMaxResults(10)
-                .withFrom("test@gmail.com")
+                .withCriteria(TriggerNewEmail.Criteria.UNSEEN)
+                .withMaxResults(5)
+                .withFrom("test@acme.com")
         )
         .toScenario("Test")
 
