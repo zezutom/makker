@@ -21,7 +21,5 @@ fun main() {
                 .withFrom("test@acme.com")
         )
         .toScenario("Test")
-
-    val json = mapper.writeValueAsString(scenario)
-    println(json)
+    println(mapper.writeValueAsString(scenario))
 }
