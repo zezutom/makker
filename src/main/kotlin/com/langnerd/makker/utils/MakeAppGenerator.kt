@@ -4,17 +4,22 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.langnerd.makker.model.MakeApp
 
 class MakeAppGenerator(private val mapper: ObjectMapper) {
+
+    private val schemaTypeMap = mapOf(
+        "account:google-restricted" to "integer"
+    )
 
     fun generate(json: String): Result<MakeApp> {
         val jsonNode = mapper.readTree(json)
         val name = jsonNode.getName()
         val actions = jsonNode.getField("actions")?.let { actions(it) } ?: emptyList()
         val feeders = jsonNode.getField("feeders")?.let { feeders(name, it) } ?: emptyList()
-        val triggers = jsonNode.getField("triggers")?.let { triggers(it) } ?: emptyList()
+        val triggers = jsonNode.getField("triggers")?.let { triggers(name, it) } ?: emptyList()
         // TODO
         return Result.success(MakeApp(name, actions, feeders, triggers))
     }
@@ -33,24 +38,50 @@ class MakeAppGenerator(private val mapper: ObjectMapper) {
 
     private fun feeders(parent: String, jsonNode: JsonNode): List<MakeApp.Feeder> {
         return if (jsonNode.isArray) {
-            jsonNode.asIterable().map { feeder(parent, it) }.map { it.getOrThrow() }
+            jsonNode.asIterable()
+                .map { module(parent, it, ::feederProperties, MakeApp::Feeder) }
+                .map { it.getOrThrow() }
         } else emptyList()
     }
 
-    private fun feeder(parent: String, jsonNode: JsonNode): Result<MakeApp.Feeder> {
+    private fun triggers(parent: String, jsonNode: JsonNode): List<MakeApp.Trigger> {
+        return if (jsonNode.isArray) {
+            jsonNode.asIterable()
+                .map { module(parent, it, ::triggerProperties, MakeApp::Trigger) }
+                .map { it.getOrThrow() }
+        } else emptyList()
+    }
+
+    private fun <T> module(
+        parent: String,
+        jsonNode: JsonNode,
+        propertyExtractor: (JsonNode) -> JsonNode,
+        successHandler: (String, String) -> T
+    ): Result<T> {
         val schemaNode = mapper.createObjectNode()
         val name = jsonNode.getName()
         schemaNode.put("\$schema", "https://json-schema.org/draft/2020-12/schema")
         schemaNode.put("\$id", "https://langnerd.com/schemas/$parent/$name.json")
         schemaNode.put("type", "object")
-        schemaNode.putIfAbsent("properties", feederProperties(jsonNode))
+        schemaNode.putIfAbsent("properties", propertyExtractor(jsonNode))
         schemaNode.put("additionalProperties", false)
         val schema = schemaNode.toPrettyString()
-        return Result.success(MakeApp.Feeder(name, schema))
+        return Result.success(successHandler(name, schema))
     }
 
-    private fun triggers(jsonNode: JsonNode): List<MakeApp.Trigger> {
-        return emptyList()
+    private fun JsonNode.toIterable(): List<JsonNode> =
+        this.asIterable().filter { it.has("name") && it.has("type") }
+
+    private fun JsonNode.addValueNode(parentNode: ObjectNode, valueNodeBuilder: ((ObjectNode) -> Unit)? = null) {
+        val valueNode = mapper.createObjectNode()
+        val type = this.getField("type")!!.asText()
+
+        // TODO handle enums
+        valueNode.put("type", schemaTypeMap[type] ?: "string")
+
+        valueNodeBuilder?.let { it(valueNode) }
+        val name = this.getField("name")!!.asText()
+        parentNode.putIfAbsent(name, valueNode)
     }
 
     private fun feederProperties(jsonNode: JsonNode): JsonNode {
@@ -68,18 +99,50 @@ class MakeAppGenerator(private val mapper: ObjectMapper) {
         if (jsonNode.has("expect")) {
             val expectNode = jsonNode.getField("expect")!!
             if (expectNode.isArray) {
-                expectNode.asIterable().filter { it.has("name") && it.has("type") }.forEach { expectPropertyNode ->
-                    val name = expectPropertyNode.getField("name")!!.asText()
-                    val valueNode = mapper.createObjectNode()
-                    valueNode.put("type", "string")
-                    if (expectPropertyNode.has("pattern")) {
-                        valueNode.put("default", expectPropertyNode.get("pattern").asText())
+                expectNode.toIterable().forEach { expectPropertyNode ->
+                    expectPropertyNode.addValueNode(propertyNode) { valueNode ->
+                        if (expectPropertyNode.has("pattern")) {
+                            valueNode.put("default", expectPropertyNode.get("pattern").asText())
+                        }
                     }
-                    propertyNode.putIfAbsent(name, valueNode)
                 }
             }
         }
         return propertyNode
+    }
+
+    private fun triggerProperties(jsonNode: JsonNode): JsonNode {
+        val propertyNode = mapper.createObjectNode()
+        if (jsonNode.has("parameters")) {
+            val parametersNode = jsonNode.getField("parameters")!!
+            if (parametersNode.isArray) {
+                parametersNode.toIterable().forEach { parameterNode ->
+                    parameterNode.addValueNode(propertyNode) {
+                        if (parameterNode.has("options")) {
+                            optionsProperties(propertyNode, parameterNode.getField("options")!!)
+                        }
+                    }
+                }
+            }
+        }
+        return propertyNode
+    }
+
+    private fun optionsProperties(parentNode: ObjectNode, jsonNode: JsonNode) {
+        if (jsonNode.isObject) {
+            optionProperties(parentNode, jsonNode)
+        } else if (jsonNode.isArray) {
+            jsonNode.asIterable().forEach { optionProperties(parentNode, it) }
+        }
+    }
+
+    private fun optionProperties(parentNode: ObjectNode, jsonNode: JsonNode) {
+        if (jsonNode.has("nested")) {
+            val nestedNode = jsonNode.getField("nested")!!
+            if (nestedNode.isArray) {
+                nestedNode.toIterable().forEach { it.addValueNode(parentNode) }
+            }
+        }
     }
 }
 
