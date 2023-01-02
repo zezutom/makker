@@ -11,7 +11,10 @@ import com.langnerd.makker.model.MakeApp
 class MakeAppGenerator(private val mapper: ObjectMapper) {
 
     private val schemaTypeMap = mapOf(
-        "account:google-restricted" to "integer"
+        "account:google-restricted" to "integer",
+        "text" to "string",
+        "boolean" to "boolean",
+        "uinteger" to "integer",
     )
 
     fun generate(json: String): Result<MakeApp> {
@@ -20,7 +23,6 @@ class MakeAppGenerator(private val mapper: ObjectMapper) {
         val actions = jsonNode.getField("actions")?.let { actions(it) } ?: emptyList()
         val feeders = jsonNode.getField("feeders")?.let { feeders(name, it) } ?: emptyList()
         val triggers = jsonNode.getField("triggers")?.let { triggers(name, it) } ?: emptyList()
-        // TODO
         return Result.success(MakeApp(name, actions, feeders, triggers))
     }
 
@@ -76,12 +78,33 @@ class MakeAppGenerator(private val mapper: ObjectMapper) {
         val valueNode = mapper.createObjectNode()
         val type = this.getField("type")!!.asText()
 
-        // TODO handle enums
-        valueNode.put("type", schemaTypeMap[type] ?: "string")
+        if (type == "select") {
+            this.addEnum(valueNode)
+        } else valueNode.put("type", schemaTypeMap[type] ?: "string")
 
         valueNodeBuilder?.let { it(valueNode) }
         val name = this.getField("name")!!.asText()
         parentNode.putIfAbsent(name, valueNode)
+    }
+
+    private fun JsonNode.addEnum(parentNode: ObjectNode) {
+        if (this.has("options")) {
+            val options = this.getField("options")!!
+            if (options.isArray) {
+                val arrayNode = mapper.createArrayNode()
+                options.asIterable().filter { it.has("value") }.forEach { option ->
+                    arrayNode.add(option.getField("value")!!.asText())
+                }
+                parentNode.putIfAbsent("enum", arrayNode)
+                if (this.has("default")) {
+                    val defaultValue = this.getField("default")!!.asText().lowercase()
+                    arrayNode.asIterable()
+                        .firstOrNull { it.asText().lowercase() == defaultValue }?.let {
+                            parentNode.putIfAbsent("default", it)
+                        }
+                }
+            }
+        }
     }
 
     private fun feederProperties(jsonNode: JsonNode): JsonNode {
@@ -121,6 +144,9 @@ class MakeAppGenerator(private val mapper: ObjectMapper) {
                         if (parameterNode.has("options")) {
                             optionsProperties(propertyNode, parameterNode.getField("options")!!)
                         }
+                        if (parameterNode.has("default")) {
+                            it.putIfAbsent("default", parameterNode.get("default"))
+                        }
                     }
                 }
             }
@@ -140,7 +166,13 @@ class MakeAppGenerator(private val mapper: ObjectMapper) {
         if (jsonNode.has("nested")) {
             val nestedNode = jsonNode.getField("nested")!!
             if (nestedNode.isArray) {
-                nestedNode.toIterable().forEach { it.addValueNode(parentNode) }
+                nestedNode.toIterable().forEach {
+                    it.addValueNode(parentNode) { valueNode ->
+                        if (it.has("default")) {
+                            valueNode.putIfAbsent("default", it.get("default"))
+                        }
+                    }
+                }
             }
         }
     }
