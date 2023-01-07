@@ -20,7 +20,7 @@ class MakeAppGenerator(private val mapper: ObjectMapper) {
     fun generate(json: String): Result<MakeApp> {
         val jsonNode = mapper.readTree(json)
         val name = jsonNode.getName()
-        val actions = jsonNode.getField("actions")?.let { actions(it) } ?: emptyList()
+        val actions = jsonNode.getField("actions")?.let { actions(name, it) } ?: emptyList()
         val feeders = jsonNode.getField("feeders")?.let { feeders(name, it) } ?: emptyList()
         val triggers = jsonNode.getField("triggers")?.let { triggers(name, it) } ?: emptyList()
         return Result.success(MakeApp(name, actions, feeders, triggers))
@@ -34,8 +34,12 @@ class MakeAppGenerator(private val mapper: ObjectMapper) {
         this.getField("name")?.let { PropertyNamingStrategies.KebabCaseStrategy().translate(it.asText()) }
             ?: "undefined"
 
-    private fun actions(jsonNode: JsonNode): List<MakeApp.Action> {
-        return emptyList()
+    private fun actions(parent: String, jsonNode: JsonNode): List<MakeApp.Action> {
+        return if (jsonNode.isArray) {
+            jsonNode.asIterable()
+                .map { module(parent, it, ::actionProperties, MakeApp::Action) }
+                .map { it.getOrThrow() }
+        } else emptyList()
     }
 
     private fun feeders(parent: String, jsonNode: JsonNode): List<MakeApp.Feeder> {
@@ -74,37 +78,65 @@ class MakeAppGenerator(private val mapper: ObjectMapper) {
     private fun JsonNode.toIterable(): List<JsonNode> =
         this.asIterable().filter { it.has("name") && it.has("type") }
 
-    private fun JsonNode.addValueNode(parentNode: ObjectNode, valueNodeBuilder: ((ObjectNode) -> Unit)? = null) {
+    private fun ObjectNode.addValueNode(jsonNode: JsonNode, valueNodeBuilder: ((ObjectNode) -> Unit)? = null) {
         val valueNode = mapper.createObjectNode()
-        val type = this.getField("type")!!.asText()
+        val type = jsonNode.getField("type")!!.asText()
 
         if (type == "select") {
-            this.addEnum(valueNode)
+            valueNode.addEnum(jsonNode)
         } else valueNode.put("type", schemaTypeMap[type] ?: "string")
 
+        if (jsonNode.has("pattern")) {
+            valueNode.put("default", jsonNode.get("pattern").asText())
+        }
+
+        if (jsonNode.has("default")) {
+            valueNode.putIfAbsent("default", jsonNode.get("default"))
+        }
+
+        if (jsonNode.has("options")) {
+            optionsProperties(valueNode, jsonNode.getField("options")!!)
+        }
+
         valueNodeBuilder?.let { it(valueNode) }
-        val name = this.getField("name")!!.asText()
-        parentNode.putIfAbsent(name, valueNode)
+        val name = jsonNode.getField("name")!!.asText()
+        this.putIfAbsent(name, valueNode)
     }
 
-    private fun JsonNode.addEnum(parentNode: ObjectNode) {
-        if (this.has("options")) {
-            val options = this.getField("options")!!
+    private fun ObjectNode.addEnum(jsonNode: JsonNode) {
+        if (jsonNode.has("options")) {
+            val options = jsonNode.getField("options")!!
             if (options.isArray) {
                 val arrayNode = mapper.createArrayNode()
                 options.asIterable().filter { it.has("value") }.forEach { option ->
                     arrayNode.add(option.getField("value")!!.asText())
                 }
-                parentNode.putIfAbsent("enum", arrayNode)
-                if (this.has("default")) {
-                    val defaultValue = this.getField("default")!!.asText().lowercase()
+                this.putIfAbsent("enum", arrayNode)
+                if (jsonNode.has("default")) {
+                    val defaultValue = jsonNode.getField("default")!!.asText().lowercase()
                     arrayNode.asIterable()
                         .firstOrNull { it.asText().lowercase() == defaultValue }?.let {
-                            parentNode.putIfAbsent("default", it)
+                            this.putIfAbsent("default", it)
                         }
                 }
             }
         }
+    }
+
+    private fun ObjectNode.addArrayNode(jsonNode: JsonNode, fieldName: String): ObjectNode {
+        if (jsonNode.has(fieldName)) {
+            val arrayNode = jsonNode.getField(fieldName)!!
+            if (arrayNode.isArray) {
+                arrayNode.toIterable().forEach { this.addValueNode(it) }
+            }
+        }
+        return this
+    }
+
+    private fun actionProperties(jsonNode: JsonNode): JsonNode {
+        return mapper.createObjectNode()
+            .addArrayNode(jsonNode, "parameters")
+            .addArrayNode(jsonNode, "expect")
     }
 
     private fun feederProperties(jsonNode: JsonNode): JsonNode {
@@ -119,39 +151,12 @@ class MakeAppGenerator(private val mapper: ObjectMapper) {
                 propertyNode.putIfAbsent("input", refNode)
             }
         }
-        if (jsonNode.has("expect")) {
-            val expectNode = jsonNode.getField("expect")!!
-            if (expectNode.isArray) {
-                expectNode.toIterable().forEach { expectPropertyNode ->
-                    expectPropertyNode.addValueNode(propertyNode) { valueNode ->
-                        if (expectPropertyNode.has("pattern")) {
-                            valueNode.put("default", expectPropertyNode.get("pattern").asText())
-                        }
-                    }
-                }
-            }
-        }
-        return propertyNode
+        return propertyNode.addArrayNode(jsonNode, "expect")
     }
 
     private fun triggerProperties(jsonNode: JsonNode): JsonNode {
-        val propertyNode = mapper.createObjectNode()
-        if (jsonNode.has("parameters")) {
-            val parametersNode = jsonNode.getField("parameters")!!
-            if (parametersNode.isArray) {
-                parametersNode.toIterable().forEach { parameterNode ->
-                    parameterNode.addValueNode(propertyNode) {
-                        if (parameterNode.has("options")) {
-                            optionsProperties(propertyNode, parameterNode.getField("options")!!)
-                        }
-                        if (parameterNode.has("default")) {
-                            it.putIfAbsent("default", parameterNode.get("default"))
-                        }
-                    }
-                }
-            }
-        }
-        return propertyNode
+        return mapper.createObjectNode()
+            .addArrayNode(jsonNode, "parameters")
     }
 
     private fun optionsProperties(parentNode: ObjectNode, jsonNode: JsonNode) {
@@ -167,11 +172,7 @@ class MakeAppGenerator(private val mapper: ObjectMapper) {
             val nestedNode = jsonNode.getField("nested")!!
             if (nestedNode.isArray) {
                 nestedNode.toIterable().forEach {
-                    it.addValueNode(parentNode) { valueNode ->
-                        if (it.has("default")) {
-                            valueNode.putIfAbsent("default", it.get("default"))
-                        }
-                    }
+                    parentNode.addValueNode(it)
                 }
             }
         }
