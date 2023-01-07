@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.langnerd.makker.model.MakeApp
+import java.io.File
+import kotlin.text.Charsets.UTF_8
 
 class MakeAppGenerator(private val mapper: ObjectMapper) {
 
@@ -179,11 +181,22 @@ class MakeAppGenerator(private val mapper: ObjectMapper) {
     }
 }
 
+private fun loadModuleDefinitions(folder: String, regex: String? = null): List<String> {
+    val loader = Thread.currentThread().contextClassLoader
+    return loader.getResource(folder)?.let { url ->
+        File(url.path).listFiles()?.let { files ->
+            val filteredFiles = regex?.let {
+                val r = Regex.fromLiteral(it)
+                files.filter { file -> file.name.matches(r) }
+            } ?: files.toList()
+            filteredFiles.map { it.readText(UTF_8) }
+        }
+    } ?: emptyList()
+}
 fun main() {
     val mapper = ObjectMapper().registerKotlinModule().setSerializationInclusion(JsonInclude.Include.NON_NULL)
     val generator = MakeAppGenerator(mapper)
-    val application = "google-email"
-    MakeAppGenerator::class.java.getResource("/source/$application.json")?.readText(Charsets.UTF_8)?.let { json ->
+    loadModuleDefinitions("source", "google-email.json").forEach { json ->
         val makeApp = generator.generate(json)
         println(makeApp)
     }
