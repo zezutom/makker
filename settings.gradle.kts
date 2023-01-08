@@ -14,3 +14,5 @@ pluginManagement {
         }
     }
 }
+include("make-client")
+include("make-sdk")

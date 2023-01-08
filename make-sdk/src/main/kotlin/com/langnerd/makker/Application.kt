@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.langnerd.makker.extensions.toScenario
-import com.tomaszezula.makker.make.api.google_email.feeders.FeedAttachments
-import com.tomaszezula.makker.make.api.google_email.feeders.TriggerNewEmail
+import com.langnerd.makker.make.api.google_email.feeders.FeedAttachments
+import com.langnerd.makker.make.api.google_email.feeders.TriggerNewEmail
 
 fun main() {
     val mapper = ObjectMapper().registerKotlinModule().setSerializationInclusion(JsonInclude.Include.NON_NULL)
