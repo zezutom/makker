@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.langnerd.makker.model.MakeApp
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.text.Charsets.UTF_8
 
 class MakeAppGenerator(private val mapper: ObjectMapper) {
@@ -97,7 +99,7 @@ class MakeAppGenerator(private val mapper: ObjectMapper) {
         }
 
         if (jsonNode.has("options")) {
-            optionsProperties(valueNode, jsonNode.getField("options")!!)
+            optionsProperties(this, jsonNode.getField("options")!!)
         }
 
         valueNodeBuilder?.let { it(valueNode) }
@@ -181,23 +183,43 @@ class MakeAppGenerator(private val mapper: ObjectMapper) {
     }
 }
 
+private fun resourceFolder(name: String): Result<File> {
+    val file = Path.of("src", "main", "resources", name).toFile()
+    return if (file.isDirectory) {
+        Result.success(file)
+    } else {
+        Result.failure(IllegalArgumentException("$name is not a directory"))
+    }
+}
+
 private fun loadModuleDefinitions(folder: String, regex: String? = null): List<String> {
-    val loader = Thread.currentThread().contextClassLoader
-    return loader.getResource(folder)?.let { url ->
-        File(url.path).listFiles()?.let { files ->
+    return resourceFolder(folder).getOrThrow()
+        .listFiles()?.let { files ->
             val filteredFiles = regex?.let {
                 val r = Regex.fromLiteral(it)
                 files.filter { file -> file.name.matches(r) }
             } ?: files.toList()
             filteredFiles.map { it.readText(UTF_8) }
-        }
-    } ?: emptyList()
+        } ?: emptyList()
 }
+
+private fun saveMakeApp(makeApp: MakeApp) {
+    val folder = resourceFolder("json").getOrThrow()
+    val appFolder = Files.createDirectories(folder.toPath().resolve(makeApp.name))
+    makeApp.actions.forEach { saveResource(appFolder, "actions", it.name, it.schema) }
+    makeApp.feeders.forEach { saveResource(appFolder, "feeders", it.name, it.schema) }
+    makeApp.triggers.forEach { saveResource(appFolder, "triggers", it.name, it.schema) }
+}
+
+private fun saveResource(rootFolder: Path, folderName: String, filename: String, fileContent: String) {
+    val targetPath = Files.createDirectories(rootFolder.resolve(folderName))
+    targetPath.resolve("$filename.json").toFile().writeText(fileContent)
+}
+
 fun main() {
     val mapper = ObjectMapper().registerKotlinModule().setSerializationInclusion(JsonInclude.Include.NON_NULL)
     val generator = MakeAppGenerator(mapper)
     loadModuleDefinitions("source", "google-email.json").forEach { json ->
-        val makeApp = generator.generate(json)
-        println(makeApp)
+        saveMakeApp(generator.generate(json).getOrThrow())
     }
 }

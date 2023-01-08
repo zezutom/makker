@@ -1,51 +1,41 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://langnerd.com/schemas/trigger-new-email.json",
-  "type": "object",
-  "properties": {
-    "account": {
-      "type": "integer"
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$id" : "https://langnerd.com/schemas/google-email/trigger-new-email.json",
+  "type" : "object",
+  "properties" : {
+    "folder" : {
+      "type" : "string"
     },
-    "folder": {
-      "type": "string",
-      "default": "INBOX"
+    "account" : {
+      "type" : "integer"
     },
-    "searchType": {
-      "enum": [
-        "simple",
-        "gmail"
-      ]
+    "criteria" : {
+      "enum" : [ "ALL", "SEEN", "UNSEEN" ],
+      "default" : "ALL"
     },
-    "criteria": {
-      "enum": [
-        "SEEN",
-        "ALL",
-        "UNSEEN"
-      ]
+    "from" : {
+      "type" : "string"
     },
-    "from": {
-      "type": "string",
-      "format": "email"
+    "subject" : {
+      "type" : "string"
     },
-    "subject": {
-      "type": "string"
+    "text" : {
+      "type" : "string"
     },
-    "text": {
-      "type": "string"
+    "xGmRaw" : {
+      "type" : "string"
     },
-    "markSeen": {
-      "type": "boolean",
-      "default": false
+    "searchType" : {
+      "enum" : [ "simple", "gmail" ],
+      "default" : "simple"
     },
-    "maxResults": {
-      "type": "integer"
+    "markSeen" : {
+      "type" : "boolean",
+      "default" : false
+    },
+    "maxResults" : {
+      "type" : "integer"
     }
   },
-  "required": [
-    "account",
-    "folder",
-    "searchType",
-    "criteria"
-  ],
-  "additionalProperties": false
+  "additionalProperties" : false
 }

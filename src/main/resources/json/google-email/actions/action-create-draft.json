@@ -1,0 +1,29 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$id" : "https://langnerd.com/schemas/google-email/action-create-draft.json",
+  "type" : "object",
+  "properties" : {
+    "account" : {
+      "type" : "integer"
+    },
+    "to" : {
+      "type" : "string"
+    },
+    "subject" : {
+      "type" : "string"
+    },
+    "html" : {
+      "type" : "string"
+    },
+    "attachments" : {
+      "type" : "string"
+    },
+    "cc" : {
+      "type" : "string"
+    },
+    "bcc" : {
+      "type" : "string"
+    }
+  },
+  "additionalProperties" : false
+}
