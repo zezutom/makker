@@ -1,15 +1,12 @@
 plugins {
-    val kotlinVersion = "1.7.10"
-    kotlin("js") version kotlinVersion apply false
-    kotlin("jvm") version kotlinVersion apply false
+    val kotlinVersion = "1.7.22"
+    id("io.ktor.plugin") version "2.2.1" apply false
     id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion apply false
-    id("org.openapi.generator") version "6.0.1" apply false
-    id("io.ktor.plugin") version "2.1.0" apply false
-    base
-    id("jacoco-report-aggregation")
+    id("org.jsonschema2dataclass") version "4.2.0" apply false
+    kotlin("jvm") version kotlinVersion apply false
 }
 
-group = "com.tomaszezula.makker"
+group = "com.langnerd.makker"
 version = "0.0.1"
 
 allprojects {
@@ -22,19 +19,7 @@ allprojects {
 }
 
 dependencies {
-    jacocoAggregation(project(":common"))
-    jacocoAggregation(project(":jvm-client"))
-    jacocoAggregation(project(":server"))
+    project(":make-client")
+    project(":make-sdk")
 }
 
-reporting {
-    reports {
-        val testCodeCoverageReport by creating(JacocoCoverageReport::class) {
-            testType.set(TestSuiteType.UNIT_TEST)
-        }
-    }
-}
-
-tasks.check {
-    dependsOn(tasks.named<JacocoReport>("testCodeCoverageReport"))
-}

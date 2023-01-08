@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://langnerd.com/schemas/connection.json",
+  "type": "object",
+  "properties": {
+    "label": {
+      "type": "string"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "scoped": {
+          "type": "boolean"
+        },
+        "connection": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

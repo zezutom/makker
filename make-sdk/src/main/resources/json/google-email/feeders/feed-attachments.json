@@ -1,0 +1,15 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$id" : "https://langnerd.com/schemas/google-email/feed-attachments.json",
+  "type" : "object",
+  "properties" : {
+    "input" : {
+      "$ref" : "../triggers/trigger-new-email.json"
+    },
+    "array" : {
+      "type" : "string",
+      "default" : "{{$1.attachments}}"
+    }
+  },
+  "additionalProperties" : false
+}

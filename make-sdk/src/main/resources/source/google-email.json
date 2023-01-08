@@ -1,0 +1,1224 @@
+{
+  "name": "google-email",
+  "version": "2.0.12",
+  "author": "Petr Malimanek",
+  "label": "Gmail",
+  "description": "Gmail integrations for you: Slack, Telegram Bot, ClickUp, Google Drive, Airtable and more. Connect your favorite apps to Gmail to automate workflows, processes and actions. It's easy with Make!",
+  "keywords": "e-mail, email, mail, gmail",
+  "theme": "#DD4B39",
+  "parameters": [],
+  "feeders": [
+    {
+      "name": "FeedAttachments",
+      "label": "Iterate attachments",
+      "description": "Iterates through received attachments.",
+      "requires": "google-email:TriggerNewEmail",
+      "expect": [
+        {
+          "name": "array",
+          "type": "array",
+          "pattern": "{{$1.attachments}}"
+        }
+      ],
+      "output": {
+        "icon": "attachment"
+      }
+    }
+  ],
+  "triggers": [
+    {
+      "name": "TriggerNewEmail",
+      "label": "Watch emails",
+      "description": "Triggers when a new email is received to be processed according to specified criteria.",
+      "parameters": [
+        {
+          "name": "account",
+          "label": "Connection",
+          "type": "account:google-restricted",
+          "on": {
+            "change": "reset_epoch"
+          },
+          "options": {
+            "scope": [
+              "https://mail.google.com/"
+            ],
+            "nested": [
+              {
+                "name": "folder",
+                "label": "Folder",
+                "type": "folder",
+                "required": true,
+                "on": {
+                  "change": "reset_epoch"
+                },
+                "options": {
+                  "store": "rpc://RpcFolder",
+                  "ids": true,
+                  "showRoot": false,
+                  "singleLevel": true
+                }
+              }
+            ]
+          },
+          "required": true
+        },
+        {
+          "name": "searchType",
+          "label": "Filter type",
+          "type": "select",
+          "required": true,
+          "default": "simple",
+          "options": [
+            {
+              "label": "Simple filter",
+              "value": "simple",
+              "nested": [
+                {
+                  "name": "criteria",
+                  "label": "Criteria",
+                  "type": "select",
+                  "required": true,
+                  "default": "all",
+                  "on": {
+                    "change": "reset_epoch"
+                  },
+                  "options": [
+                    {
+                      "label": "All emails",
+                      "value": "ALL"
+                    },
+                    {
+                      "label": "Only Read emails",
+                      "value": "SEEN"
+                    },
+                    {
+                      "label": "Only Unread emails",
+                      "value": "UNSEEN"
+                    }
+                  ]
+                },
+                {
+                  "name": "from",
+                  "label": "Sender email address",
+                  "help": "Processes only emails sent from a specified email address.",
+                  "type": "email",
+                  "required": false,
+                  "on": {
+                    "change": "reset_epoch"
+                  },
+                  "advanced": true
+                },
+                {
+                  "name": "subject",
+                  "label": "Subject",
+                  "help": "Processes only emails that contain a specified character string in the subject.",
+                  "type": "text",
+                  "required": false,
+                  "on": {
+                    "change": "reset_epoch"
+                  },
+                  "advanced": true
+                },
+                {
+                  "name": "text",
+                  "label": "Search phrase",
+                  "help": "Processes only emails that contain a specified character string (anywhere).",
+                  "type": "text",
+                  "required": false,
+                  "on": {
+                    "change": "reset_epoch"
+                  },
+                  "advanced": true
+                }
+              ]
+            },
+            {
+              "label": "Gmail filter",
+              "value": "gmail",
+              "nested": [
+                {
+                  "name": "xGmRaw",
+                  "label": "Query",
+                  "help": "Use Gmail search syntax, e.g. to search for messages in the Social category that include an attachment, use `category:social has:attachment`. More information [here](https://support.google.com/mail/answer/7190).",
+                  "type": "text",
+                  "required": true,
+                  "on": {
+                    "change": "reset_epoch"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "markSeen",
+          "label": "Mark email message(s) as read when fetched",
+          "type": "boolean",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "maxResults",
+          "label": "Maximum number of results",
+          "type": "uinteger",
+          "required": false
+        }
+      ],
+      "samples": "rpc://RpcTriggerNewEmailSample",
+      "epoch": {
+        "all": {
+          "label": "All emails",
+          "help": "Processes all available emails according to settings.",
+          "data": {
+            "epochType": "all",
+            "epochId": null,
+            "lastDate": null,
+            "lastId": null
+          }
+        },
+        "date": {
+          "label": "Emails from after a specific date",
+          "help": "Processes all emails received after a specified date/time.",
+          "data": {
+            "epochType": "date",
+            "epochId": null,
+            "lastDate": "{{date}}",
+            "lastId": null
+          }
+        },
+        "now": {
+          "label": "From now on",
+          "data": {
+            "epochType": "now",
+            "epochId": null,
+            "lastDate": "{{date}}",
+            "lastId": null
+          }
+        },
+        "select": {
+          "label": "Select the first email",
+          "options": "rpc://RpcTriggerNewEmailEpoch"
+        }
+      },
+      "interface": [
+        {
+          "name": "headers",
+          "label": "Headers - basic",
+          "type": "collection",
+          "spec": [
+            {
+              "name": "received",
+              "label": "Received",
+              "type": "text"
+            },
+            {
+              "name": "deliveredTo",
+              "label": "Delivered-To",
+              "type": "email"
+            },
+            {
+              "name": "xOriginalFrom",
+              "label": "X-Original-From",
+              "type": "text"
+            },
+            {
+              "name": "replyTo",
+              "label": "Reply-To",
+              "type": "text"
+            },
+            {
+              "name": "messageId",
+              "label": "Message ID",
+              "type": "email"
+            }
+          ]
+        },
+        {
+          "name": "headersList",
+          "label": "Headers - list",
+          "type": "array",
+          "spec": [
+            {
+              "label": "Key",
+              "name": "key",
+              "type": "text"
+            },
+            {
+              "label": "Value",
+              "name": "value",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "name": "id",
+          "type": "number",
+          "label": "Email ID (UID)"
+        },
+        {
+          "name": "date",
+          "type": "date",
+          "label": "Date"
+        },
+        {
+          "name": "subject",
+          "type": "text",
+          "label": "Subject"
+        },
+        {
+          "name": "text",
+          "type": "text",
+          "label": "Text content"
+        },
+        {
+          "name": "html",
+          "type": "text",
+          "label": "HTML content"
+        },
+        {
+          "name": "from",
+          "type": "collection",
+          "label": "Sender",
+          "spec": [
+            {
+              "name": "name",
+              "type": "text",
+              "label": "Sender name"
+            },
+            {
+              "name": "address",
+              "type": "email",
+              "label": "Email address"
+            }
+          ]
+        },
+        {
+          "name": "to",
+          "type": "array",
+          "label": "Recipient",
+          "spec": [
+            {
+              "name": "name",
+              "type": "text",
+              "label": "Recipient name"
+            },
+            {
+              "name": "address",
+              "type": "email",
+              "label": "Email address"
+            }
+          ]
+        },
+        {
+          "name": "cc",
+          "type": "array",
+          "label": "Copy recipients",
+          "spec": [
+            {
+              "name": "name",
+              "type": "text",
+              "label": "Recipient name"
+            },
+            {
+              "name": "address",
+              "type": "email",
+              "label": "Email address"
+            }
+          ]
+        },
+        {
+          "name": "bcc",
+          "type": "array",
+          "label": "Blind copy recipients",
+          "spec": [
+            {
+              "name": "name",
+              "type": "text",
+              "label": "Recipient name"
+            },
+            {
+              "name": "address",
+              "type": "email",
+              "label": "Email address"
+            }
+          ]
+        },
+        {
+          "name": "attachments",
+          "type": "array",
+          "label": "Attachments",
+          "spec": [
+            {
+              "name": "contentType",
+              "type": "text",
+              "label": "MIME type"
+            },
+            {
+              "name": "fileName",
+              "type": "filename",
+              "label": "File name",
+              "semantic": "file:name"
+            },
+            {
+              "name": "fileSize",
+              "type": "number",
+              "label": "File size"
+            },
+            {
+              "name": "contentId",
+              "type": "text",
+              "label": "Content-ID"
+            },
+            {
+              "name": "data",
+              "type": "buffer",
+              "label": "Data",
+              "semantic": "file:data"
+            }
+          ]
+        },
+        {
+          "name": "labels",
+          "type": "array",
+          "label": "Labels"
+        },
+        {
+          "name": "xGmMsgid",
+          "label": "X-GM-MSGID",
+          "type": "text"
+        },
+        {
+          "name": "messageId",
+          "label": "Gmail Message ID",
+          "type": "text"
+        },
+        {
+          "name": "threadId",
+          "label": "Thread ID",
+          "type": "text"
+        },
+        {
+          "name": "messageLink",
+          "label": "Message Link",
+          "type": "url"
+        }
+      ],
+      "output": {
+        "icon": "email"
+      }
+    }
+  ],
+  "actions": [
+    {
+      "name": "ActionSendEmail",
+      "label": "Send an email",
+      "description": "Sends a new email.",
+      "parameters": [
+        {
+          "name": "account",
+          "label": "Connection",
+          "type": "account:google-restricted",
+          "options": {
+            "scope": [
+              "https://mail.google.com/"
+            ]
+          },
+          "required": true
+        }
+      ],
+      "expect": [
+        {
+          "name": "from",
+          "label": "From",
+          "help": "Here you can set up a custom sender email address. If you enter an incorrect email address, an error may occur when sending a message because your account may not have permission to send emails from a different address than your own. E.g. `test@mail.com` or `\"John Bush\" test@email.com`",
+          "type": "text",
+          "advanced": true
+        },
+        {
+          "name": "to",
+          "label": "To",
+          "type": "array",
+          "required": true,
+          "editable": true,
+          "help": "Enter a recipient email address.",
+          "labels": {
+            "add": "Add a recipient",
+            "edit": "Edit a recipient"
+          },
+          "spec": {
+            "name": " ",
+            "type": "email",
+            "label": "Email address",
+            "required": true
+          }
+        },
+        {
+          "name": "subject",
+          "label": "Subject",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "html",
+          "label": "Content",
+          "type": "text",
+          "required": false,
+          "help": "You can use HTML tags."
+        },
+        {
+          "name": "attachments",
+          "label": "Attachments",
+          "type": "array",
+          "spec": [
+            {
+              "name": "fileName",
+              "label": "File name",
+              "type": "filename",
+              "required": true,
+              "help": "Enter a file name, including the ending, e.g. img.jpeg.",
+              "semantic": "file:name"
+            },
+            {
+              "name": "data",
+              "label": "Data",
+              "help": "Binary or text data to be uploaded to a selected folder. [More information about working with files](kb://files.html).",
+              "type": "buffer",
+              "required": true,
+              "semantic": "file:data"
+            },
+            {
+              "name": "cid",
+              "label": "Content-ID",
+              "type": "text",
+              "required": false,
+              "help": "Inserts images into content"
+            }
+          ],
+          "required": false,
+          "editable": true,
+          "labels": {
+            "add": "Add an attachment",
+            "edit": "Edit an attachment"
+          }
+        },
+        {
+          "name": "cc",
+          "label": "Copy recipient",
+          "type": "array",
+          "required": false,
+          "advanced": true,
+          "editable": true,
+          "labels": {
+            "add": "Add a copy recipient",
+            "edit": "Edit a copy recipient"
+          },
+          "spec": {
+            "type": "email",
+            "label": "Email address",
+            "required": false
+          }
+        },
+        {
+          "name": "bcc",
+          "label": "Blind copy recipient",
+          "type": "array",
+          "required": false,
+          "advanced": true,
+          "editable": true,
+          "labels": {
+            "add": "Add a blind copy recipient",
+            "edit": "Edit a blind copy recipient"
+          },
+          "spec": {
+            "type": "email",
+            "label": "Email address",
+            "required": false
+          }
+        }
+      ],
+      "interface": [
+        {
+          "name": "messageId",
+          "label": "Message ID",
+          "type": "text"
+        }
+      ],
+      "output": {
+        "icon": "email"
+      }
+    },
+    {
+      "name": "ActionCreateDraft",
+      "label": "Create a draft",
+      "description": "Creates a new draft and adds it to a selected folder.",
+      "parameters": [
+        {
+          "name": "account",
+          "label": "Connection",
+          "type": "account:google-restricted",
+          "options": {
+            "scope": [
+              "https://mail.google.com/"
+            ],
+            "nested": {
+              "domain": "expect",
+              "store": [
+                {
+                  "name": "folder",
+                  "label": "Folder",
+                  "type": "folder",
+                  "required": true,
+                  "editable": true,
+                  "options": {
+                    "store": "rpc://RpcFolder",
+                    "ids": true,
+                    "showRoot": false,
+                    "singleLevel": true
+                  }
+                }
+              ]
+            }
+          },
+          "required": true
+        }
+      ],
+      "expect": [
+        {
+          "name": "to",
+          "label": "To",
+          "type": "array",
+          "required": false,
+          "editable": true,
+          "help": "Enter a recipient email address.",
+          "labels": {
+            "add": "Add a recipient",
+            "edit": "Edit a recipient"
+          },
+          "spec": {
+            "name": " ",
+            "type": "email",
+            "label": "Email address",
+            "required": true
+          }
+        },
+        {
+          "name": "subject",
+          "label": "Subject",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "html",
+          "label": "Content",
+          "type": "text",
+          "required": false,
+          "help": "You can use HTML tags."
+        },
+        {
+          "name": "attachments",
+          "label": "Attachments",
+          "type": "array",
+          "spec": [
+            {
+              "name": "fileName",
+              "label": "File name",
+              "type": "filename",
+              "required": true,
+              "help": "Enter a file name, including the ending, e.g. img.jpeg.",
+              "semantic": "file:name"
+            },
+            {
+              "name": "data",
+              "label": "Data",
+              "help": "Binary or text data to be uploaded to a selected folder. [More information about working with files](kb://files.html).",
+              "type": "buffer",
+              "required": true,
+              "semantic": "file:data"
+            }
+          ],
+          "required": false,
+          "editable": true,
+          "labels": {
+            "add": "Add an attachment",
+            "edit": "Edit an attachment"
+          }
+        },
+        {
+          "name": "cc",
+          "label": "Copy recipient",
+          "type": "array",
+          "required": false,
+          "advanced": true,
+          "editable": true,
+          "labels": {
+            "add": "Add a copy recipient",
+            "edit": "Edit a copy recipient"
+          },
+          "spec": {
+            "name": " ",
+            "type": "email",
+            "label": "Email address",
+            "required": true
+          }
+        },
+        {
+          "name": "bcc",
+          "label": "Blind copy recipient",
+          "type": "array",
+          "required": false,
+          "advanced": true,
+          "editable": true,
+          "labels": {
+            "add": "Add a blind copy recipient",
+            "edit": "Edit a blind copy recipient"
+          },
+          "spec": {
+            "name": " ",
+            "type": "email",
+            "label": "Email address",
+            "required": true
+          }
+        }
+      ],
+      "interface": [
+        {
+          "name": "id",
+          "label": "Email ID (UID)",
+          "type": "number"
+        },
+        {
+          "name": "messageId",
+          "label": "Message ID",
+          "type": "text"
+        }
+      ],
+      "output": {
+        "icon": "email"
+      }
+    },
+    {
+      "name": "ActionSetFlagSeen",
+      "label": "Mark an email as read",
+      "description": "Marks an email or a draft in a selected directory as read by setting the \"Read\" flag.",
+      "parameters": [
+        {
+          "name": "account",
+          "label": "Connection",
+          "type": "account:google-restricted",
+          "options": {
+            "scope": [
+              "https://mail.google.com/"
+            ],
+            "nested": {
+              "domain": "expect",
+              "store": [
+                {
+                  "name": "folder",
+                  "label": "Folder",
+                  "type": "folder",
+                  "required": true,
+                  "editable": true,
+                  "options": {
+                    "store": "rpc://RpcFolder",
+                    "ids": true,
+                    "showRoot": false,
+                    "singleLevel": true
+                  }
+                }
+              ]
+            }
+          },
+          "required": true
+        }
+      ],
+      "expect": [
+        {
+          "name": "id",
+          "label": "Email ID (UID)",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ActionSetFlagUnseen",
+      "label": "Mark an email as unread",
+      "description": "Marks an email or draft in a selected directory as unread by setting the \"Unread\" flag.",
+      "parameters": [
+        {
+          "name": "account",
+          "label": "Connection",
+          "type": "account:google-restricted",
+          "options": {
+            "scope": [
+              "https://mail.google.com/"
+            ],
+            "nested": {
+              "domain": "expect",
+              "store": [
+                {
+                  "name": "folder",
+                  "label": "Folder",
+                  "type": "folder",
+                  "required": true,
+                  "editable": true,
+                  "options": {
+                    "store": "rpc://RpcFolder",
+                    "ids": true,
+                    "showRoot": false,
+                    "singleLevel": true
+                  }
+                }
+              ]
+            }
+          },
+          "required": true
+        }
+      ],
+      "expect": [
+        {
+          "name": "id",
+          "label": "Email ID (UID)",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ActionMoveEmail",
+      "label": "Move an email",
+      "description": "Moves a chosen email or a draft to a selected folder.",
+      "parameters": [
+        {
+          "name": "account",
+          "label": "Connection",
+          "type": "account:google-restricted",
+          "options": {
+            "scope": [
+              "https://mail.google.com/"
+            ],
+            "nested": {
+              "domain": "expect",
+              "store": [
+                {
+                  "name": "folder",
+                  "label": "Folder",
+                  "type": "folder",
+                  "required": true,
+                  "editable": true,
+                  "options": {
+                    "store": "rpc://RpcFolder",
+                    "ids": true,
+                    "showRoot": false,
+                    "singleLevel": true
+                  }
+                },
+                {
+                  "name": "destinationFolder",
+                  "label": "Destination folder",
+                  "type": "folder",
+                  "required": true,
+                  "editable": true,
+                  "options": {
+                    "store": "rpc://RpcFolder",
+                    "ids": true,
+                    "showRoot": false,
+                    "singleLevel": true
+                  }
+                }
+              ]
+            }
+          },
+          "required": true
+        }
+      ],
+      "expect": [
+        {
+          "name": "id",
+          "label": "Email ID (UID)",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ActionCopyEmail",
+      "label": "Copy an email",
+      "description": "Copies an email or a draft into a selected folder.",
+      "parameters": [
+        {
+          "name": "account",
+          "label": "Connection",
+          "type": "account:google-restricted",
+          "options": {
+            "scope": [
+              "https://mail.google.com/"
+            ],
+            "nested": {
+              "domain": "expect",
+              "store": [
+                {
+                  "name": "folder",
+                  "label": "Folder",
+                  "type": "folder",
+                  "required": true,
+                  "editable": true,
+                  "options": {
+                    "store": "rpc://RpcFolder",
+                    "ids": true,
+                    "showRoot": false,
+                    "singleLevel": true
+                  }
+                },
+                {
+                  "name": "destinationFolder",
+                  "label": "Destination folder",
+                  "type": "folder",
+                  "required": true,
+                  "editable": true,
+                  "options": {
+                    "store": "rpc://RpcFolder",
+                    "ids": true,
+                    "showRoot": false,
+                    "singleLevel": true
+                  }
+                }
+              ]
+            }
+          },
+          "required": true
+        }
+      ],
+      "expect": [
+        {
+          "name": "id",
+          "label": "Email ID (UID)",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ActionDeleteEmail",
+      "label": "Delete an email",
+      "description": "Removes an email or a draft from a selected folder.",
+      "deprecated": true,
+      "parameters": [
+        {
+          "name": "account",
+          "label": "Connection",
+          "type": "account:google-restricted",
+          "options": {
+            "scope": [
+              "https://mail.google.com/"
+            ],
+            "nested": {
+              "domain": "expect",
+              "store": [
+                {
+                  "name": "folder",
+                  "label": "Folder",
+                  "help": "Select the folder that contains the email you want to delete.",
+                  "type": "folder",
+                  "required": true,
+                  "editable": true,
+                  "options": {
+                    "store": "rpc://RpcFolder",
+                    "ids": true,
+                    "showRoot": false,
+                    "singleLevel": true
+                  }
+                }
+              ]
+            }
+          },
+          "required": true
+        }
+      ],
+      "expect": [
+        {
+          "name": "id",
+          "label": "Email ID (UID)",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "expunge",
+          "label": "Expunge",
+          "help": "Permanently removes all messages flagged as Deleted in the currently open mailbox. The behavior is driven by the setting in Settings > Forwarding POP/IMAP in IMAP access section.",
+          "type": "boolean",
+          "required": true,
+          "default": false,
+          "advanced": true
+        }
+      ]
+    },
+    {
+      "name": "ActionDeleteEmailApi",
+      "label": "Delete an email",
+      "description": "Removes an email or a draft from a selected folder.",
+      "parameters": [
+        {
+          "name": "account",
+          "label": "Connection",
+          "type": "account:google-restricted",
+          "options": {
+            "scope": [
+              "https://mail.google.com/"
+            ]
+          },
+          "required": true
+        }
+      ],
+      "expect": [
+        {
+          "name": "messageId",
+          "label": "Gmail Message ID",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "permanent",
+          "label": "Permanently",
+          "type": "boolean",
+          "required": true,
+          "default": false,
+          "help": "If you set this setting to true then the email will be removed permanently instead of being placed into the trash folder."
+        }
+      ]
+    },
+    {
+      "name": "ActionAddLabels",
+      "label": "Add labels",
+      "description": "Adds labels to an email message.",
+      "deprecated": true,
+      "parameters": [
+        {
+          "name": "account",
+          "label": "Connection",
+          "type": "account:google-restricted",
+          "required": true,
+          "options": {
+            "scope": [
+              "https://mail.google.com/"
+            ],
+            "nested": {
+              "domain": "expect",
+              "store": [
+                {
+                  "name": "folder",
+                  "label": "Folder",
+                  "type": "folder",
+                  "required": true,
+                  "editable": true,
+                  "options": {
+                    "store": "rpc://RpcFolder",
+                    "ids": true,
+                    "showRoot": false,
+                    "singleLevel": true
+                  }
+                },
+                {
+                  "name": "labels",
+                  "label": "Labels",
+                  "type": "select",
+                  "required": true,
+                  "multiple": true,
+                  "options": {
+                    "store": "rpc://RpcFolder",
+                    "ids": true,
+                    "showRoot": false,
+                    "singleLevel": true
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "expect": [
+        {
+          "name": "id",
+          "label": "Email ID (UID)",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ActionSetLabels",
+      "label": "Set labels",
+      "description": "Sets up new labels for an email message.",
+      "deprecated": true,
+      "parameters": [
+        {
+          "name": "account",
+          "label": "Connection",
+          "type": "account:google-restricted",
+          "required": true,
+          "options": {
+            "scope": [
+              "https://mail.google.com/"
+            ],
+            "nested": {
+              "domain": "expect",
+              "store": [
+                {
+                  "name": "folder",
+                  "label": "Folder",
+                  "type": "folder",
+                  "required": true,
+                  "editable": true,
+                  "options": {
+                    "store": "rpc://RpcFolder",
+                    "ids": true,
+                    "showRoot": false,
+                    "singleLevel": true
+                  }
+                },
+                {
+                  "name": "labels",
+                  "label": "Labels",
+                  "type": "select",
+                  "required": true,
+                  "multiple": true,
+                  "options": {
+                    "store": "rpc://RpcFolder",
+                    "ids": true,
+                    "showRoot": false,
+                    "singleLevel": true
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "expect": [
+        {
+          "name": "id",
+          "label": "Email ID (UID)",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ActionDeleteLabels",
+      "label": "Delete labels",
+      "description": "Removes labels from an email message.",
+      "deprecated": true,
+      "parameters": [
+        {
+          "name": "account",
+          "label": "Connection",
+          "type": "account:google-restricted",
+          "required": true,
+          "options": {
+            "scope": [
+              "https://mail.google.com/"
+            ],
+            "nested": {
+              "domain": "expect",
+              "store": [
+                {
+                  "name": "folder",
+                  "label": "Folder",
+                  "type": "folder",
+                  "required": true,
+                  "editable": true,
+                  "options": {
+                    "store": "rpc://RpcFolder",
+                    "ids": true,
+                    "showRoot": false,
+                    "singleLevel": true
+                  }
+                },
+                {
+                  "name": "labels",
+                  "label": "Labels",
+                  "type": "select",
+                  "required": true,
+                  "multiple": true,
+                  "options": {
+                    "store": "rpc://RpcFolder",
+                    "ids": true,
+                    "showRoot": false,
+                    "singleLevel": true
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "expect": [
+        {
+          "name": "id",
+          "label": "Email ID (UID)",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ActionModifyLabelsApi",
+      "label": "Modify email labels",
+      "description": "Modifies labels on the specified email message.",
+      "parameters": [
+        {
+          "name": "account",
+          "label": "Connection",
+          "type": "account:google-restricted",
+          "required": true,
+          "options": {
+            "scope": [
+              "https://mail.google.com/"
+            ],
+            "nested": {
+              "domain": "expect",
+              "store": [
+                {
+                  "name": "messageId",
+                  "label": "Gmail Message ID",
+                  "type": "text",
+                  "required": true
+                },
+                {
+                  "name": "addLabelIds",
+                  "label": "Labels to add",
+                  "type": "select",
+                  "editable": true,
+                  "multiple": true,
+                  "options": "rpc://RpcLabel"
+                },
+                {
+                  "name": "removeLabelIds",
+                  "label": "Labels to remove",
+                  "type": "select",
+                  "editable": true,
+                  "multiple": true,
+                  "options": "rpc://RpcLabel"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "componentType": "app",
+  "dependencies": {
+    "accounts": [
+      "google-restricted"
+    ],
+    "hooks": [],
+    "keys": [],
+    "apps": {
+      "imt-email": "^6"
+    }
+  },
+  "icon": "/img/packages/google-email.png",
+  "premium": false,
+  "latest": true
+}

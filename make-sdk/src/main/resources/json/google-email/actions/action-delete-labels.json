@@ -1,0 +1,14 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$id" : "https://langnerd.com/schemas/google-email/action-delete-labels.json",
+  "type" : "object",
+  "properties" : {
+    "account" : {
+      "type" : "integer"
+    },
+    "id" : {
+      "type" : "string"
+    }
+  },
+  "additionalProperties" : false
+}

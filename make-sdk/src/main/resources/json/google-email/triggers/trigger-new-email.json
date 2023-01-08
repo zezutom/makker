@@ -1,0 +1,41 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$id" : "https://langnerd.com/schemas/google-email/trigger-new-email.json",
+  "type" : "object",
+  "properties" : {
+    "folder" : {
+      "type" : "string"
+    },
+    "account" : {
+      "type" : "integer"
+    },
+    "criteria" : {
+      "enum" : [ "ALL", "SEEN", "UNSEEN" ],
+      "default" : "ALL"
+    },
+    "from" : {
+      "type" : "string"
+    },
+    "subject" : {
+      "type" : "string"
+    },
+    "text" : {
+      "type" : "string"
+    },
+    "xGmRaw" : {
+      "type" : "string"
+    },
+    "searchType" : {
+      "enum" : [ "simple", "gmail" ],
+      "default" : "simple"
+    },
+    "markSeen" : {
+      "type" : "boolean",
+      "default" : false
+    },
+    "maxResults" : {
+      "type" : "integer"
+    }
+  },
+  "additionalProperties" : false
+}

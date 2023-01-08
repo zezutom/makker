@@ -1,8 +1,18 @@
-
 rootProject.name = "makker"
 
-include("js-client")
-include("jvm-client")
-//include("make-adapter")
-include("server")
-include("common")
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+        // add mavenLocal() if you are using a locally built version of the plugin
+    }
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id.startsWith("com.google.cloud.tools.appengine")) {
+                useModule("com.google.cloud.tools:appengine-gradle-plugin:${requested.version}")
+            }
+        }
+    }
+}
+include("make-client")
+include("make-sdk")

@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+    "searchType": {
+      "enum": ["simple", "complex"]
+    },
+    "maxResults":  {
+      "type": "integer",
+      "minimum": 1
+    },
+    "criteria": {
+      "enum": ["SEEN", "ALL", "UNSEEN"]
+    }
+  }
+}
